@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Mysql中DATE,DATETIME,和TIMESTAMP 的区别 | 汪崇虎个人博客</title>
+  <meta name="description" content="1. DATE 用途：只存储日期（年、月、日），不包含时间部分。 格式：YYYY-MM-DD 范围：从 1000-01-01 到 9999-12-31 存储：不存储时区信息，存储的值与时区无关。 占用字节：3 字节 应用场景：适合只需要存储日期的场景，如出生日期、节假日、预约日期等。  示例：123sqlSELECT DATE(&amp;#x27;2024-09-12&amp;#x27;);-- 返回: 2024">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mysql中DATE,DATETIME,和TIMESTAMP 的区别">
+<meta property="og:url" content="https://your-domain.com/2024/09/18/Mysql%E4%B8%ADDATE-DATETIME-%E5%92%8CTIMESTAMP-%E7%9A%84%E5%8C%BA%E5%88%AB/index.html">
+<meta property="og:site_name" content="汪崇虎的博客">
+<meta property="og:description" content="1. DATE 用途：只存储日期（年、月、日），不包含时间部分。 格式：YYYY-MM-DD 范围：从 1000-01-01 到 9999-12-31 存储：不存储时区信息，存储的值与时区无关。 占用字节：3 字节 应用场景：适合只需要存储日期的场景，如出生日期、节假日、预约日期等。  示例：123sqlSELECT DATE(&amp;#x27;2024-09-12&amp;#x27;);-- 返回: 2024">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-09-18T03:21:53.000Z">
+<meta property="article:modified_time" content="2024-12-13T03:17:10.614Z">
+<meta property="article:author" content="汪崇虎">
+<meta property="article:tag" content="mysql">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://your-domain.com/2024/09/18/Mysql%E4%B8%ADDATE-DATETIME-%E5%92%8CTIMESTAMP-%E7%9A%84%E5%8C%BA%E5%88%AB/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="汪崇虎的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/noodleOnce" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">汪崇虎</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Java &amp; 管理</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 武汉, 中国</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欲成大树，莫与草争<br>将军有剑，不斩苍蝇</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag">AI编程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag">java基础</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%89%AB%E7%9B%B2/" rel="tag">扫盲</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" rel="tag">技术设计</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag">笔记</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%A1%E7%90%86/" rel="tag">管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag">网络</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A4%E7%9F%A5/" rel="tag">认知</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag">项目管理</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/AI%E7%BC%96%E7%A8%8B/" style="font-size: 13.4px;">AI编程</a> <a href="/tags/java%E5%9F%BA%E7%A1%80/" style="font-size: 13.2px;">java基础</a> <a href="/tags/mysql/" style="font-size: 13.4px;">mysql</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 14px;">工具</a> <a href="/tags/%E6%80%A7%E8%83%BD/" style="font-size: 13px;">性能</a> <a href="/tags/%E6%89%AB%E7%9B%B2/" style="font-size: 13.6px;">扫盲</a> <a href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" style="font-size: 13.4px;">技术设计</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 13.2px;">投资</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13.4px;">架构</a> <a href="/tags/%E7%AC%94%E8%AE%B0/" style="font-size: 13.8px;">笔记</a> <a href="/tags/%E7%AE%A1%E7%90%86/" style="font-size: 13px;">管理</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 13px;">网络</a> <a href="/tags/%E8%AE%A4%E7%9F%A5/" style="font-size: 13px;">认知</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13.6px;">运维</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" style="font-size: 13.4px;">项目管理</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">三月 2026</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/02/">二月 2026</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">十二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/11/">十一月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">十月 2025</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/06/">六月 2025</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">五月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">四月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/03/">三月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">一月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/05/">五月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">一月 2024</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">十一月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/13/UI%E6%9C%AF%E8%AF%AD/" class="title">UI术语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-13T10:00:43.000Z" itemprop="datePublished">2026-03-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/09/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%87%BA%E5%8F%A3IP%E5%92%8C%E5%85%A5%E5%8F%A3IP/" class="title">服务器的出口IP和入口IP</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-09T03:59:59.000Z" itemprop="datePublished">2026-03-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/05/ClaudeCode%E5%BC%80%E5%8F%91%E8%80%85%E9%80%9F%E6%9F%A5%E8%A1%A8/" class="title">ClaudeCode开发者速查表</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-04T16:08:08.000Z" itemprop="datePublished">2026-03-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/03/%E4%B8%AA%E4%BA%BA%E6%89%80%E5%BE%97%E7%A8%8E/" class="title">个人所得税</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-03T02:00:06.000Z" itemprop="datePublished">2026-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/02/27/%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%E7%B2%BE%E9%80%89/" class="title">阮一峰周刊精选</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-02-27T01:45:10.000Z" itemprop="datePublished">2026-02-27</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Mysql中DATE-DATETIME-和TIMESTAMP-的区别" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Mysql中DATE,DATETIME,和TIMESTAMP 的区别
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2024/09/18/Mysql%E4%B8%ADDATE-DATETIME-%E5%92%8CTIMESTAMP-%E7%9A%84%E5%8C%BA%E5%88%AB/" class="article-date">
+	  <time datetime="2024-09-18T03:21:53.000Z" itemprop="datePublished">2024-09-18</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/mysql/" rel="tag">mysql</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/09/18/Mysql%E4%B8%ADDATE-DATETIME-%E5%92%8CTIMESTAMP-%E7%9A%84%E5%8C%BA%E5%88%AB/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="1-DATE"><a href="#1-DATE" class="headerlink" title="1. DATE"></a>1. <strong><code>DATE</code></strong></h3><ul>
+<li><strong>用途</strong>：只存储日期（年、月、日），不包含时间部分。</li>
+<li><strong>格式</strong>：<code>YYYY-MM-DD</code></li>
+<li><strong>范围</strong>：从 <code>1000-01-01</code> 到 <code>9999-12-31</code></li>
+<li><strong>存储</strong>：不存储时区信息，存储的值与时区无关。</li>
+<li><strong>占用字节</strong>：3 字节</li>
+<li><strong>应用场景</strong>：适合只需要存储日期的场景，如出生日期、节假日、预约日期等。</li>
+</ul>
+<h4 id="示例："><a href="#示例：" class="headerlink" title="示例："></a>示例：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql</span><br><span class="line">SELECT DATE(&#x27;2024-09-12&#x27;);</span><br><span class="line">-- 返回: 2024-09-12</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-DATETIME"><a href="#2-DATETIME" class="headerlink" title="2. DATETIME"></a>2. <strong><code>DATETIME</code></strong></h3><ul>
+<li><strong>用途</strong>：存储日期和时间（年、月、日、时、分、秒），不包含时区。</li>
+<li><strong>格式</strong>：<code>YYYY-MM-DD HH:MM:SS</code></li>
+<li><strong>范围</strong>：从 <code>1000-01-01 00:00:00</code> 到 <code>9999-12-31 23:59:59</code></li>
+<li><strong>存储</strong>：不考虑时区，也不会自动进行时区转换。</li>
+<li><strong>占用字节</strong>：8 字节</li>
+<li><strong>应用场景</strong>：适合需要精确记录某个时刻的场景，但无需考虑时区影响，如事件时间戳、日志记录等。</li>
+</ul>
+<h4 id="示例：-1"><a href="#示例：-1" class="headerlink" title="示例："></a>示例：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql</span><br><span class="line">SELECT DATETIME(&#x27;2024-09-12 14:30:00&#x27;);</span><br><span class="line">-- 返回: 2024-09-12 14:30:00</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-TIMESTAMP"><a href="#3-TIMESTAMP" class="headerlink" title="3. TIMESTAMP"></a>3. <strong><code>TIMESTAMP</code></strong></h3><ul>
+<li><strong>用途</strong>：存储日期和时间（年、月、日、时、分、秒），包含时区信息。</li>
+<li><strong>格式</strong>：<code>YYYY-MM-DD HH:MM:SS</code></li>
+<li><strong>范围</strong>：从 <code>1970-01-01 00:00:01</code> UTC 到 <code>2038-01-19 03:14:07</code> UTC（32 位整数的范围）。</li>
+<li><strong>存储</strong>：存储的是 UTC 时间，根据连接的时区设置，在存储和检索时会自动转换时区。</li>
+<li><strong>占用字节</strong>：4 字节</li>
+<li><strong>自动更新</strong>：可以使用 <code>CURRENT_TIMESTAMP</code> 来自动存储插入或更新的当前时间。</li>
+<li><strong>应用场景</strong>：适合需要记录具体事件发生的精确时间且需要处理跨时区的场景，比如日志、创建时间和更新时间字段。</li>
+</ul>
+<h4 id="示例：-2"><a href="#示例：-2" class="headerlink" title="示例："></a>示例：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sql</span><br><span class="line">SELECT TIMESTAMP(&#x27;2024-09-12 14:30:00&#x27;);</span><br><span class="line">-- 根据服务器时区和客户端时区返回值不同</span><br></pre></td></tr></table></figure>
+
+<h3 id="主要区别总结："><a href="#主要区别总结：" class="headerlink" title="主要区别总结："></a>主要区别总结：</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th><code>DATE</code></th>
+<th><code>DATETIME</code></th>
+<th><code>TIMESTAMP</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>存储内容</strong></td>
+<td>仅日期</td>
+<td>日期 + 时间</td>
+<td>日期 + 时间（含时区转换）</td>
+</tr>
+<tr>
+<td><strong>时区相关</strong></td>
+<td>无</td>
+<td>无</td>
+<td>有</td>
+</tr>
+<tr>
+<td><strong>范围</strong></td>
+<td><code>1000-01-01</code> 到 <code>9999-12-31</code></td>
+<td><code>1000-01-01 00:00:00</code> 到 <code>9999-12-31 23:59:59</code></td>
+<td><code>1970-01-01</code> 到 <code>2038-01-19</code></td>
+</tr>
+<tr>
+<td><strong>占用空间</strong></td>
+<td>3 字节</td>
+<td>8 字节</td>
+<td>4 字节</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>只需日期</td>
+<td>日期和时间，无需时区转换</td>
+<td>日期和时间，跨时区场景</td>
+</tr>
+</tbody></table>
+<p>选择合适的类型取决于你是否需要时区支持以及存储的日期和时间精度。</p>
+<hr>
+<h3 id="思考："><a href="#思考：" class="headerlink" title="思考："></a>思考：</h3><p>当<strong>2038年</strong>到来时，使用 <code>TIMESTAMP</code> 类型的 MySQL 数据库可能会面临一个问题，这个问题称为<strong>2038年问题</strong>，或者<strong>Unix时间戳溢出问题</strong>。这个问题主要影响以32位有符号整数存储的时间数据。</p>
+<h5 id="为什么会出现2038年问题？"><a href="#为什么会出现2038年问题？" class="headerlink" title="为什么会出现2038年问题？"></a>为什么会出现2038年问题？</h5><ul>
+<li><strong><code>TIMESTAMP</code>类型的存储</strong>：<code>TIMESTAMP</code> 在 MySQL 中基于 Unix 时间戳存储，该时间戳记录自 1970 年 1 月 1 日 UTC 时间的秒数。</li>
+<li><strong>32位有符号整数</strong>：MySQL 的 <code>TIMESTAMP</code> 数据类型传统上使用 32 位有符号整数来存储秒数。32 位有符号整数的最大值为 <code>2147483647</code>，对应的日期时间为 <strong>2038年1月19日 03:14:07 UTC</strong>。</li>
+<li><strong>溢出问题</strong>：当这个时间戳超过 <code>2147483647</code> 时，整数会溢出，无法再表示有效的时间，这将导致日期和时间出现错误，可能回到1970年（或者表现为负数时间）。</li>
+</ul>
+<h5 id="到了2038年会发生什么？"><a href="#到了2038年会发生什么？" class="headerlink" title="到了2038年会发生什么？"></a>到了2038年会发生什么？</h5><ol>
+<li><strong>时间溢出</strong>：到达 <strong>2038年1月19日 03:14:07 UTC</strong> 后，如果 MySQL 依旧使用 32 位 <code>TIMESTAMP</code> 存储，新的 <code>TIMESTAMP</code> 值将无法表示超过这个时间的日期，系统可能会返回错误时间（通常是负数，或回到1970年1月1日）。</li>
+<li><strong>应用和数据崩溃风险</strong>：如果应用程序或数据库依赖这些时间戳，那么在处理超过2038年的时间数据时，可能会发生异常行为、崩溃或者数据丢失。</li>
+</ol>
+<h5 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h5><ol>
+<li><strong>升级到64位系统</strong>：64位系统可以扩展时间戳的范围。现代 MySQL 版本在支持 64 位系统上扩展了 <code>TIMESTAMP</code>，这允许存储和处理超出 2038 年的日期。<ul>
+<li><strong>64位整数</strong> 可以表示更长的时间范围，大约是从公元前29万年到公元29万年之间，所以2038年问题在这种情况下不会再发生。</li>
+</ul>
+</li>
+<li><strong>使用 <code>DATETIME</code> 类型</strong>：如果不需要时区转换，也可以将字段类型从 <code>TIMESTAMP</code> 改为 <code>DATETIME</code>。<code>DATETIME</code> 直接存储日期和时间，不依赖 Unix 时间戳，不会遇到2038年问题。<ul>
+<li><strong>注意</strong>：<code>DATETIME</code> 不会在存储或检索时自动转换时区。</li>
+</ul>
+</li>
+<li><strong>及时更新数据库版本</strong>：最新版本的 MySQL 和其他数据库通常已经解决了这个问题，通过使用 64 位时间戳，确保支持超出2038年的时间。</li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://your-domain.com/2024/09/18/Mysql%E4%B8%ADDATE-DATETIME-%E5%92%8CTIMESTAMP-%E7%9A%84%E5%8C%BA%E5%88%AB/" title="Mysql中DATE,DATETIME,和TIMESTAMP 的区别" target="_blank" rel="external">https://your-domain.com/2024/09/18/Mysql中DATE-DATETIME-和TIMESTAMP-的区别/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/noodleOnce" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/noodleOnce" target="_blank"><span class="text-dark">汪崇虎</span><small class="ml-1x">Java &amp; 管理</small></a></h3>
+        <div>芝兰生于深林，不以无人而不芳; 君子修道立德，不谓穷困而改节。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2024/09/18/Mysql-date-add-%E5%87%BD%E6%95%B0%E7%9A%84%E7%94%A8%E6%B3%95/" title="Mysql date_add()函数的用法"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2024/06/13/%E8%87%AA%E5%B7%B1%E5%AF%B9%E7%AE%A1%E7%90%86%E7%9A%84%E7%90%86%E8%A7%A3/" title="自己对管理的理解"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="beian">
+            <a href="https://beian.miit.gov.cn/" target="_blank">鄂ICP备2025103743号-1</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .beian {
+        margin-top: 5px;
+        color: #efefef;
+        font-size: 12px;
+    }
+
+    .beian a {
+        color: #efefef;
+        text-decoration: none;
+    }
+
+    .beian a:hover {
+        color: #efefef;
+    }
+</style>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>

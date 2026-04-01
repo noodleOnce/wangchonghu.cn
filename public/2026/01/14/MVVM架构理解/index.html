@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>MVVM架构理解 | 汪崇虎个人博客</title>
+  <meta name="description" content="MVVM 架构说明什么是 MVVM 架构？MVVM（Model-View-ViewModel）是一种架构模式，将代码分为三层：  Model：数据和业务逻辑  View：UI 界面展示  ViewModel：连接 View 和 Model，处理 UI 逻辑，通过数据绑定与 View 交互   架构关系图：┌──────────┐     ┌──────────────┐     ┌────────">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MVVM架构理解">
+<meta property="og:url" content="https://your-domain.com/2026/01/14/MVVM%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:site_name" content="汪崇虎的博客">
+<meta property="og:description" content="MVVM 架构说明什么是 MVVM 架构？MVVM（Model-View-ViewModel）是一种架构模式，将代码分为三层：  Model：数据和业务逻辑  View：UI 界面展示  ViewModel：连接 View 和 Model，处理 UI 逻辑，通过数据绑定与 View 交互   架构关系图：┌──────────┐     ┌──────────────┐     ┌────────">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-14T03:05:14.000Z">
+<meta property="article:modified_time" content="2026-01-14T03:05:21.524Z">
+<meta property="article:author" content="汪崇虎">
+<meta property="article:tag" content="汪崇虎, 博客">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://your-domain.com/2026/01/14/MVVM%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="汪崇虎的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/noodleOnce" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">汪崇虎</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Java &amp; 管理</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 武汉, 中国</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欲成大树，莫与草争<br>将军有剑，不斩苍蝇</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag">AI编程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag">java基础</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%89%AB%E7%9B%B2/" rel="tag">扫盲</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" rel="tag">技术设计</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag">笔记</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%A1%E7%90%86/" rel="tag">管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag">网络</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A4%E7%9F%A5/" rel="tag">认知</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag">项目管理</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/AI%E7%BC%96%E7%A8%8B/" style="font-size: 13.4px;">AI编程</a> <a href="/tags/java%E5%9F%BA%E7%A1%80/" style="font-size: 13.2px;">java基础</a> <a href="/tags/mysql/" style="font-size: 13.4px;">mysql</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 14px;">工具</a> <a href="/tags/%E6%80%A7%E8%83%BD/" style="font-size: 13px;">性能</a> <a href="/tags/%E6%89%AB%E7%9B%B2/" style="font-size: 13.6px;">扫盲</a> <a href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" style="font-size: 13.4px;">技术设计</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 13.2px;">投资</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13.4px;">架构</a> <a href="/tags/%E7%AC%94%E8%AE%B0/" style="font-size: 13.8px;">笔记</a> <a href="/tags/%E7%AE%A1%E7%90%86/" style="font-size: 13px;">管理</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 13px;">网络</a> <a href="/tags/%E8%AE%A4%E7%9F%A5/" style="font-size: 13px;">认知</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13.6px;">运维</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" style="font-size: 13.4px;">项目管理</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">三月 2026</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/02/">二月 2026</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">十二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/11/">十一月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">十月 2025</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/06/">六月 2025</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">五月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">四月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/03/">三月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">一月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/05/">五月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">一月 2024</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">十一月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/13/UI%E6%9C%AF%E8%AF%AD/" class="title">UI术语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-13T10:00:43.000Z" itemprop="datePublished">2026-03-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/09/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%87%BA%E5%8F%A3IP%E5%92%8C%E5%85%A5%E5%8F%A3IP/" class="title">服务器的出口IP和入口IP</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-09T03:59:59.000Z" itemprop="datePublished">2026-03-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/05/ClaudeCode%E5%BC%80%E5%8F%91%E8%80%85%E9%80%9F%E6%9F%A5%E8%A1%A8/" class="title">ClaudeCode开发者速查表</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-04T16:08:08.000Z" itemprop="datePublished">2026-03-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/03/%E4%B8%AA%E4%BA%BA%E6%89%80%E5%BE%97%E7%A8%8E/" class="title">个人所得税</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-03T02:00:06.000Z" itemprop="datePublished">2026-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/02/27/%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%E7%B2%BE%E9%80%89/" class="title">阮一峰周刊精选</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-02-27T01:45:10.000Z" itemprop="datePublished">2026-02-27</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-MVVM架构理解" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      MVVM架构理解
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2026/01/14/MVVM%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/" class="article-date">
+	  <time datetime="2026-01-14T03:05:14.000Z" itemprop="datePublished">2026-01-14</time>
+	</a>
+</span>
+        
+        
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2026/01/14/MVVM%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="MVVM-架构说明"><a href="#MVVM-架构说明" class="headerlink" title="MVVM 架构说明"></a>MVVM 架构说明</h2><h3 id="什么是-MVVM-架构？"><a href="#什么是-MVVM-架构？" class="headerlink" title="什么是 MVVM 架构？"></a>什么是 MVVM 架构？</h3><p>MVVM（Model-View-ViewModel）是一种架构模式，将代码分为三层：</p>
+<ul>
+<li><p>Model：数据和业务逻辑</p>
+</li>
+<li><p>View：UI 界面展示</p>
+</li>
+<li><p>ViewModel：连接 View 和 Model，处理 UI 逻辑，通过数据绑定与 View 交互</p>
+</li>
+</ul>
+<h3 id="架构关系图："><a href="#架构关系图：" class="headerlink" title="架构关系图："></a>架构关系图：</h3><p>┌──────────┐     ┌──────────────┐     ┌──────────┐</p>
+<p>│  View  │ ◄────► │ ViewModel  │ ◄────► │ Model  │</p>
+<p>│ (视图) │ 绑定   │ (视图模型)  │ 获取   │ (数据模型) │</p>
+<p>└──────────┘     └──────────────┘     └──────────┘</p>
+<p>  UI层        业务逻辑层        数据层</p>
+<hr>
+<h2 id="订单列表中的-MVVM-对应关系"><a href="#订单列表中的-MVVM-对应关系" class="headerlink" title="订单列表中的 MVVM 对应关系"></a>订单列表中的 MVVM 对应关系</h2><h3 id="M-Model-数据模型层"><a href="#M-Model-数据模型层" class="headerlink" title="M (Model) - 数据模型层"></a>M (Model) - 数据模型层</h3><p>负责数据定义、接口调用、数据存储：</p>
+<h4 id="1-数据模型类OrderModel-ktLines-149-149-JvmField-val-expLicenceNames-String-null"><a href="#1-数据模型类OrderModel-ktLines-149-149-JvmField-val-expLicenceNames-String-null" class="headerlink" title="1. 数据模型类OrderModel.ktLines 149-149@JvmField val expLicenceNames: String? &#x3D; null,"></a>1. 数据模型类OrderModel.ktLines 149-149@JvmField val expLicenceNames: String? &#x3D; null,</h4><ul>
+<li><p>OrderModel：订单数据模型</p>
+</li>
+<li><p>OrderInfoResult：接口返回的数据结构</p>
+</li>
+</ul>
+<h4 id="2-接口服务ApiService-javaLines-1057-1070-GET-URLs-SEARCHORDERNEW-Observable-searchOrderNew-Query-“orderCodeSplits”-String-orderCodes-Query-“orderState”-String-orderState-…"><a href="#2-接口服务ApiService-javaLines-1057-1070-GET-URLs-SEARCHORDERNEW-Observable-searchOrderNew-Query-“orderCodeSplits”-String-orderCodes-Query-“orderState”-String-orderState-…" class="headerlink" title="2. 接口服务ApiService.javaLines 1057-1070@GET(URLs.SEARCHORDERNEW)Observable searchOrderNew(    @Query(“orderCodeSplits”) String orderCodes,    @Query(“orderState”) String orderState,    &#x2F;&#x2F; …);"></a>2. 接口服务ApiService.javaLines 1057-1070@GET(URLs.SEARCHORDERNEW)Observable<OrderInfoResult> searchOrderNew(    @Query(“orderCodeSplits”) String orderCodes,    @Query(“orderState”) String orderState,    &#x2F;&#x2F; …);</h4><ul>
+<li><p>ApiService：定义接口</p>
+</li>
+<li><p>ApiServiceInstance：获取 API 实例</p>
+</li>
+<li><p>URLs：接口路径常量</p>
+</li>
+</ul>
+<h4 id="3-数据仓库（Repository，可选）"><a href="#3-数据仓库（Repository，可选）" class="headerlink" title="3. 数据仓库（Repository，可选）"></a>3. 数据仓库（Repository，可选）</h4><ul>
+<li>封装数据获取逻辑，统一数据源</li>
+</ul>
+<hr>
+<h3 id="V-View-视图层"><a href="#V-View-视图层" class="headerlink" title="V (View) - 视图层"></a>V (View) - 视图层</h3><p>负责 UI 展示和用户交互：</p>
+<h4 id="1-Activity-FragmentOrderStateActivity-javaLines-43-43public-class-OrderStateActivity-extends-BaseMVVMActivity-implements-IOrderStateDataNew"><a href="#1-Activity-FragmentOrderStateActivity-javaLines-43-43public-class-OrderStateActivity-extends-BaseMVVMActivity-implements-IOrderStateDataNew" class="headerlink" title="1. Activity&#x2F;FragmentOrderStateActivity.javaLines 43-43public class OrderStateActivity extends BaseMVVMActivity&lt;ActivityOrderStateBinding, OrderStateViewModel&gt; implements IOrderStateDataNew {"></a>1. Activity&#x2F;FragmentOrderStateActivity.javaLines 43-43public class OrderStateActivity extends BaseMVVMActivity&lt;ActivityOrderStateBinding, OrderStateViewModel&gt; implements IOrderStateDataNew {</h4><ul>
+<li>OrderStateActivity：订单状态页面容器</li>
+</ul>
+<p>OrderListNewFragment.javaLines 16-16</p>
+<p>public class OrderListNewFragment extends LazyFragment&lt;FragmentOrderListNewBinding, OrderListNewViewModel&gt; {</p>
+<ul>
+<li>OrderListNewFragment：订单列表 Fragment</li>
+</ul>
+<h4 id="2-布局文件"><a href="#2-布局文件" class="headerlink" title="2. 布局文件"></a>2. 布局文件</h4><ul>
+<li><p>activity_order_state.xml：Activity 布局</p>
+</li>
+<li><p>fragment_order_list_new.xml：Fragment 布局</p>
+</li>
+<li><p>item_order_list_new.xml：列表 Item 布局</p>
+</li>
+</ul>
+<h4 id="3-DataBindingOrderListNewFragment-javaLines-54-54return-DataBindingUtil-bind-root-OrderListNewFragment-javaLines-67-67mViewDataBinding-setViewmodel-viewModel"><a href="#3-DataBindingOrderListNewFragment-javaLines-54-54return-DataBindingUtil-bind-root-OrderListNewFragment-javaLines-67-67mViewDataBinding-setViewmodel-viewModel" class="headerlink" title="3. DataBindingOrderListNewFragment.javaLines 54-54return DataBindingUtil.bind(root);OrderListNewFragment.javaLines 67-67mViewDataBinding.setViewmodel(viewModel);"></a>3. DataBindingOrderListNewFragment.javaLines 54-54return DataBindingUtil.bind(root);OrderListNewFragment.javaLines 67-67mViewDataBinding.setViewmodel(viewModel);</h4><ul>
+<li><p>FragmentOrderListNewBinding：自动生成的绑定类</p>
+</li>
+<li><p>通过 mViewDataBinding.setViewmodel(viewModel) 绑定 ViewModel</p>
+</li>
+</ul>
+<hr>
+<h3 id="VM-ViewModel-视图模型层"><a href="#VM-ViewModel-视图模型层" class="headerlink" title="VM (ViewModel) - 视图模型层"></a>VM (ViewModel) - 视图模型层</h3><p>连接 View 和 Model，处理 UI 相关业务逻辑：</p>
+<h4 id="1-OrderListNewViewModelOrderListNewViewModel-javaLines-70-74public-class-OrderListNewViewModel-extends-BaseObservable-implements-SimpleFragmentLifecycle-private-Fragment-fragment-private-FragmentOrderListNewBinding-binding-public-String-totalPrice-“¥0”"><a href="#1-OrderListNewViewModelOrderListNewViewModel-javaLines-70-74public-class-OrderListNewViewModel-extends-BaseObservable-implements-SimpleFragmentLifecycle-private-Fragment-fragment-private-FragmentOrderListNewBinding-binding-public-String-totalPrice-“¥0”" class="headerlink" title="1. OrderListNewViewModelOrderListNewViewModel.javaLines 70-74public class OrderListNewViewModel extends BaseObservable implements SimpleFragmentLifecycle {  private Fragment fragment;  private FragmentOrderListNewBinding binding;    public String totalPrice &#x3D; “¥0”;"></a>1. OrderListNewViewModelOrderListNewViewModel.javaLines 70-74public class OrderListNewViewModel extends BaseObservable implements SimpleFragmentLifecycle {  private Fragment fragment;  private FragmentOrderListNewBinding binding;    public String totalPrice &#x3D; “¥0”;</h4><p>职责：</p>
+<ul>
+<li><p>数据</p>
+<p>获取：调用接口获取订单列表</p>
+<p>OrderListNewViewModel.javaLines 538-550</p>
+<p>disposable &#x3D; ApiServiceInstance.getInstance().searchOrderNew(</p>
+<p>​        orderCodes,</p>
+<p>​        orderState,</p>
+<p>​        page,</p>
+<p>​        30,</p>
+<p>​        event.supplierId,</p>
+<p>​        event.branchId,</p>
+<p>​        event.custNameKwd,</p>
+<p>​        event.dateType,</p>
+<p>​        event.startTime,</p>
+<p>​        event.endTime,</p>
+<p>​        event.validOrderFlag</p>
+<p>​    )</p>
+</li>
+<li><p>数据处理：转换、格式化数据</p>
+</li>
+<li><p>UI 状态：管理 loading、错误等状态</p>
+</li>
+<li><p>列表适配</p>
+<p>：创建和管理 Adapter</p>
+<p>OrderListNewViewModel.javaLines 119-119</p>
+<p>mAdapter &#x3D; new BaseQuickAdapter&lt;OrderModel, BaseViewHolder&gt;(R.layout.item_order_list_new) {</p>
+</li>
+</ul>
+<h4 id="2-OrderStateViewModelOrderStateViewModel-javaLines-47-60public-class-OrderStateViewModel-extends-BaseObservable-private-Context-context-public-ActivityOrderStateBinding-binding-public-OrderStateActivity-PagerAdapter-pagerAdapter-…-public-void-init-BaseActivity-baseActivity-Context-context-ActivityOrderStateBinding-binding-int-currentPage-…-this-pagerAdapter-new-OrderStateActivity-PagerAdapter-baseActivity-getSupportFragmentManager"><a href="#2-OrderStateViewModelOrderStateViewModel-javaLines-47-60public-class-OrderStateViewModel-extends-BaseObservable-private-Context-context-public-ActivityOrderStateBinding-binding-public-OrderStateActivity-PagerAdapter-pagerAdapter-…-public-void-init-BaseActivity-baseActivity-Context-context-ActivityOrderStateBinding-binding-int-currentPage-…-this-pagerAdapter-new-OrderStateActivity-PagerAdapter-baseActivity-getSupportFragmentManager" class="headerlink" title="2. OrderStateViewModelOrderStateViewModel.javaLines 47-60public class OrderStateViewModel extends BaseObservable {  private Context context;  public ActivityOrderStateBinding binding;  public OrderStateActivity.PagerAdapter pagerAdapter;  &#x2F;&#x2F; …  public void init(BaseActivity baseActivity, Context context, ActivityOrderStateBinding binding, int currentPage) {    &#x2F;&#x2F; …    this.pagerAdapter &#x3D; new OrderStateActivity.PagerAdapter(baseActivity.getSupportFragmentManager());"></a>2. OrderStateViewModelOrderStateViewModel.javaLines 47-60public class OrderStateViewModel extends BaseObservable {  private Context context;  public ActivityOrderStateBinding binding;  public OrderStateActivity.PagerAdapter pagerAdapter;  &#x2F;&#x2F; …  public void init(BaseActivity baseActivity, Context context, ActivityOrderStateBinding binding, int currentPage) {    &#x2F;&#x2F; …    this.pagerAdapter &#x3D; new OrderStateActivity.PagerAdapter(baseActivity.getSupportFragmentManager());</h4><p>职责：</p>
+<ul>
+<li><p>页面逻辑：管理页签切换、筛选条件</p>
+</li>
+<li><p>ViewPager 适配：创建 PagerAdapter</p>
+</li>
+</ul>
+<hr>
+<h2 id="MVVM-数据流向"><a href="#MVVM-数据流向" class="headerlink" title="MVVM 数据流向"></a>MVVM 数据流向</h2><h3 id="数据获取流程："><a href="#数据获取流程：" class="headerlink" title="数据获取流程："></a>数据获取流程：</h3><p>用户操作&#x2F;页面加载</p>
+<p>  ↓</p>
+<p>View (Fragment.initData)</p>
+<p>  ↓ 调用</p>
+<p>ViewModel.refresh()</p>
+<p>  ↓ 调用</p>
+<p>ApiServiceInstance.searchOrderNew() [Model层]</p>
+<p>  ↓ 返回</p>
+<p>OrderInfoResult [Model]</p>
+<p>  ↓ 处理</p>
+<p>ViewModel.replaceData() [ViewModel层]</p>
+<p>  ↓ 更新</p>
+<p>Adapter.notifyDataSetChanged()</p>
+<p>  ↓ 渲染</p>
+<p>View 显示订单列表 [View层]</p>
+<h3 id="代码示例："><a href="#代码示例：" class="headerlink" title="代码示例："></a>代码示例：</h3><p>OrderListNewFragment.javaLines 67-67</p>
+<p>mViewDataBinding.setViewmodel(viewModel);</p>
+<p>OrderListNewFragment.javaLines 87-87</p>
+<p>viewModel.refresh();</p>
+<p>OrderListNewViewModel.javaLines 538-567</p>
+<p>disposable &#x3D; ApiServiceInstance.getInstance().searchOrderNew(…)</p>
+<p>  .subscribe(orderInfoResult -&gt; {</p>
+<p>​    if (orderInfoResult.code &#x3D;&#x3D; 1) {</p>
+<p>​      &#x2F;&#x2F; …</p>
+<p>​      mAdapter.replaceData(orderInfoResult.data.orderList);</p>
+<p>​    }</p>
+<p>  });</p>
+<hr>
+<h2 id="MVVM-的优势"><a href="#MVVM-的优势" class="headerlink" title="MVVM 的优势"></a>MVVM 的优势</h2><ol>
+<li><p>关注点分离：UI、业务逻辑、数据分离</p>
+</li>
+<li><p>可测试性：ViewModel 独立于 View，易于单元测试</p>
+</li>
+<li><p>可维护性：代码结构清晰，易于维护</p>
+</li>
+<li><p>数据绑定：自动同步 UI 和数据，减少手动更新代码</p>
+</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在订单列表中的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th align="left">层级</th>
+<th align="left">具体组件</th>
+<th align="left">文件位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">M (Model)</td>
+<td align="left">OrderModel、OrderInfoResult、ApiService</td>
+<td align="left">data&#x2F;、cgi&#x2F;</td>
+</tr>
+<tr>
+<td align="left">V (View)</td>
+<td align="left">OrderStateActivity、OrderListNewFragment、布局 XML</td>
+<td align="left">activity&#x2F;、fragment&#x2F;、res&#x2F;layout&#x2F;</td>
+</tr>
+<tr>
+<td align="left">VM (ViewModel)</td>
+<td align="left">OrderStateViewModel、OrderListNewViewModel</td>
+<td align="left">mvvm&#x2F;vm&#x2F;</td>
+</tr>
+</tbody></table>
+<p>这种架构使代码分层清晰，职责明确，便于维护和扩展。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://your-domain.com/2026/01/14/MVVM%E6%9E%B6%E6%9E%84%E7%90%86%E8%A7%A3/" title="MVVM架构理解" target="_blank" rel="external">https://your-domain.com/2026/01/14/MVVM架构理解/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/noodleOnce" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/noodleOnce" target="_blank"><span class="text-dark">汪崇虎</span><small class="ml-1x">Java &amp; 管理</small></a></h3>
+        <div>芝兰生于深林，不以无人而不芳; 君子修道立德，不谓穷困而改节。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2026/02/25/%E4%BB%80%E4%B9%88%E6%98%AFzshrc/" title="什么是zshrc"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2025/12/11/%E8%82%A1%E7%A5%A8%E6%8A%95%E8%B5%84%E6%A1%86%E6%9E%B6/" title="股票投资框架"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="beian">
+            <a href="https://beian.miit.gov.cn/" target="_blank">鄂ICP备2025103743号-1</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .beian {
+        margin-top: 5px;
+        color: #efefef;
+        font-size: 12px;
+    }
+
+    .beian a {
+        color: #efefef;
+        text-decoration: none;
+    }
+
+    .beian a:hover {
+        color: #efefef;
+    }
+</style>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>

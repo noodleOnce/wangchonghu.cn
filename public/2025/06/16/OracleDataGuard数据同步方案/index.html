@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>OracleDataGuard数据同步方案 | 汪崇虎个人博客</title>
+  <meta name="description" content="1. Oracle DataGuard 概述1.1 什么是DataGuardOracle DataGuard是Oracle数据库自带的灾难恢复和高可用性解决方案，通过维护一个或多个备用数据库（Standby Database）来保护生产数据库（Primary Database）。 1.2 核心价值 数据保护：防止数据丢失和数据损坏 高可用性：最小化计划内外停机时间 灾难恢复：快速从灾难中恢复业务运">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OracleDataGuard数据同步方案">
+<meta property="og:url" content="https://your-domain.com/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="汪崇虎的博客">
+<meta property="og:description" content="1. Oracle DataGuard 概述1.1 什么是DataGuardOracle DataGuard是Oracle数据库自带的灾难恢复和高可用性解决方案，通过维护一个或多个备用数据库（Standby Database）来保护生产数据库（Primary Database）。 1.2 核心价值 数据保护：防止数据丢失和数据损坏 高可用性：最小化计划内外停机时间 灾难恢复：快速从灾难中恢复业务运">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-16T02:48:19.000Z">
+<meta property="article:modified_time" content="2025-06-16T10:43:13.346Z">
+<meta property="article:author" content="汪崇虎">
+<meta property="article:tag" content="架构">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://your-domain.com/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="汪崇虎的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/noodleOnce" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">汪崇虎</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Java &amp; 管理</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 武汉, 中国</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欲成大树，莫与草争<br>将军有剑，不斩苍蝇</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag">AI编程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag">java基础</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%89%AB%E7%9B%B2/" rel="tag">扫盲</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" rel="tag">技术设计</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag">笔记</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%A1%E7%90%86/" rel="tag">管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag">网络</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A4%E7%9F%A5/" rel="tag">认知</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag">项目管理</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/AI%E7%BC%96%E7%A8%8B/" style="font-size: 13.4px;">AI编程</a> <a href="/tags/java%E5%9F%BA%E7%A1%80/" style="font-size: 13.2px;">java基础</a> <a href="/tags/mysql/" style="font-size: 13.4px;">mysql</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 14px;">工具</a> <a href="/tags/%E6%80%A7%E8%83%BD/" style="font-size: 13px;">性能</a> <a href="/tags/%E6%89%AB%E7%9B%B2/" style="font-size: 13.6px;">扫盲</a> <a href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" style="font-size: 13.4px;">技术设计</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 13.2px;">投资</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13.4px;">架构</a> <a href="/tags/%E7%AC%94%E8%AE%B0/" style="font-size: 13.8px;">笔记</a> <a href="/tags/%E7%AE%A1%E7%90%86/" style="font-size: 13px;">管理</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 13px;">网络</a> <a href="/tags/%E8%AE%A4%E7%9F%A5/" style="font-size: 13px;">认知</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13.6px;">运维</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" style="font-size: 13.4px;">项目管理</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">三月 2026</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/02/">二月 2026</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">十二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/11/">十一月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">十月 2025</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/06/">六月 2025</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">五月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">四月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/03/">三月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">一月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/05/">五月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">一月 2024</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">十一月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/13/UI%E6%9C%AF%E8%AF%AD/" class="title">UI术语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-13T10:00:43.000Z" itemprop="datePublished">2026-03-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/09/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%87%BA%E5%8F%A3IP%E5%92%8C%E5%85%A5%E5%8F%A3IP/" class="title">服务器的出口IP和入口IP</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-09T03:59:59.000Z" itemprop="datePublished">2026-03-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/05/ClaudeCode%E5%BC%80%E5%8F%91%E8%80%85%E9%80%9F%E6%9F%A5%E8%A1%A8/" class="title">ClaudeCode开发者速查表</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-04T16:08:08.000Z" itemprop="datePublished">2026-03-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/03/%E4%B8%AA%E4%BA%BA%E6%89%80%E5%BE%97%E7%A8%8E/" class="title">个人所得税</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-03T02:00:06.000Z" itemprop="datePublished">2026-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/02/27/%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%E7%B2%BE%E9%80%89/" class="title">阮一峰周刊精选</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-02-27T01:45:10.000Z" itemprop="datePublished">2026-02-27</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-OracleDataGuard数据同步方案" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      OracleDataGuard数据同步方案
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/" class="article-date">
+	  <time datetime="2025-06-16T02:48:19.000Z" itemprop="datePublished">2025-06-16</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-Oracle-DataGuard-概述"><a href="#1-Oracle-DataGuard-概述" class="headerlink" title="1. Oracle DataGuard 概述"></a>1. Oracle DataGuard 概述</h2><h3 id="1-1-什么是DataGuard"><a href="#1-1-什么是DataGuard" class="headerlink" title="1.1 什么是DataGuard"></a>1.1 什么是DataGuard</h3><p>Oracle DataGuard是Oracle数据库自带的灾难恢复和高可用性解决方案，通过维护一个或多个备用数据库（Standby Database）来保护生产数据库（Primary Database）。</p>
+<h3 id="1-2-核心价值"><a href="#1-2-核心价值" class="headerlink" title="1.2 核心价值"></a>1.2 核心价值</h3><ul>
+<li><strong>数据保护</strong>：防止数据丢失和数据损坏</li>
+<li><strong>高可用性</strong>：最小化计划内外停机时间</li>
+<li><strong>灾难恢复</strong>：快速从灾难中恢复业务运营</li>
+<li><strong>读写分离</strong>：备库可承担只读查询负载</li>
+</ul>
+<h2 id="2-DataGuard架构详解"><a href="#2-DataGuard架构详解" class="headerlink" title="2. DataGuard架构详解"></a>2. DataGuard架构详解</h2><h3 id="2-1-基本架构组件"><a href="#2-1-基本架构组件" class="headerlink" title="2.1 基本架构组件"></a>2.1 基本架构组件</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│         Primary Database        │</span><br><span class="line">│    (海南本地 - 主生产库)        │</span><br><span class="line">│                                 │</span><br><span class="line">│  ┌─────────────┐ ┌──────────── │</span><br><span class="line">│  │   LGWR      │ │ Archive Log │</span><br><span class="line">│  │   Process   │ │   Process   │</span><br><span class="line">│  └─────────────┘ └──────────── │</span><br><span class="line">└─────────────┬───────────────────┘</span><br><span class="line">              │ Redo Transport</span><br><span class="line">              │ (归档日志传输)</span><br><span class="line">              ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│        Standby Database         │</span><br><span class="line">│     (华为云 - 备用库)           │</span><br><span class="line">│                                 │</span><br><span class="line">│  ┌─────────────┐ ┌──────────── │</span><br><span class="line">│  │    RFS      │ │   MRP       │</span><br><span class="line">│  │  Process    │ │  Process    │</span><br><span class="line">│  └─────────────┘ └──────────── │</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-关键进程说明"><a href="#2-2-关键进程说明" class="headerlink" title="2.2 关键进程说明"></a>2.2 关键进程说明</h3><p><strong>主库端进程</strong>：</p>
+<ul>
+<li>**LGWR (Log Writer)**：负责将重做日志写入主库，同时将日志传输到备库</li>
+<li>**ARCH (Archiver)**：负责归档重做日志并传输到备库</li>
+<li>**LNS (Log Writer NetworkServer)**：网络服务进程，负责日志传输</li>
+</ul>
+<p><strong>备库端进程</strong>：</p>
+<ul>
+<li>**RFS (Remote File Server)**：接收来自主库的重做日志</li>
+<li>**MRP (Media Recovery Process)**：应用重做日志到备库</li>
+<li>**LSP (Log Shipping Process)**：管理日志传输</li>
+</ul>
+<h2 id="3-DataGuard类型详解"><a href="#3-DataGuard类型详解" class="headerlink" title="3. DataGuard类型详解"></a>3. DataGuard类型详解</h2><h3 id="3-1-Physical-Standby（物理备库）-推荐方案"><a href="#3-1-Physical-Standby（物理备库）-推荐方案" class="headerlink" title="3.1 Physical Standby（物理备库）- 推荐方案"></a>3.1 Physical Standby（物理备库）- 推荐方案</h3><h4 id="3-1-1-工作原理"><a href="#3-1-1-工作原理" class="headerlink" title="3.1.1 工作原理"></a>3.1.1 工作原理</h4><ul>
+<li>通过应用重做日志在块级别维护与主库完全相同的副本</li>
+<li>使用Oracle的恢复机制应用变更</li>
+<li>数据在物理层面完全一致</li>
+</ul>
+<h4 id="3-1-2-优势"><a href="#3-1-2-优势" class="headerlink" title="3.1.2 优势"></a>3.1.2 优势</h4><ul>
+<li><strong>完全数据保护</strong>：块级别的精确复制</li>
+<li><strong>自动故障检测</strong>：内置的监控和故障检测</li>
+<li><strong>透明应用切换</strong>：应用程序无需修改</li>
+<li><strong>读取性能</strong>：可以开启只读模式提供查询服务</li>
+<li><strong>自动同步</strong>：无需手动干预</li>
+</ul>
+<h4 id="3-1-3-配置示例"><a href="#3-1-3-配置示例" class="headerlink" title="3.1.3 配置示例"></a>3.1.3 配置示例</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 主库配置</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_CONFIG<span class="operator">=</span><span class="string">&#x27;DG_CONFIG=(PRIMARY,STANDBY)&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_1<span class="operator">=</span><span class="string">&#x27;LOCATION=/u01/archive VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME=PRIMARY&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME=STANDBY&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_STATE_2<span class="operator">=</span>ENABLE;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> REMOTE_LOGIN_PASSWORDFILE<span class="operator">=</span>EXCLUSIVE;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_FORMAT<span class="operator">=</span><span class="string">&#x27;%t_%s_%r.dbf&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_MAX_PROCESSES<span class="operator">=</span><span class="number">5</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> FAL_SERVER<span class="operator">=</span>STANDBY;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> FAL_CLIENT<span class="operator">=</span><span class="keyword">PRIMARY</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 备库配置</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_CONFIG<span class="operator">=</span><span class="string">&#x27;DG_CONFIG=(PRIMARY,STANDBY)&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_1<span class="operator">=</span><span class="string">&#x27;LOCATION=/u01/archive VALID_FOR=(ALL_LOGFILES,ALL_ROLES) DB_UNIQUE_NAME=STANDBY&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=PRIMARY LGWR ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME=PRIMARY&#x27;</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> REMOTE_LOGIN_PASSWORDFILE<span class="operator">=</span>EXCLUSIVE;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> FAL_SERVER<span class="operator">=</span><span class="keyword">PRIMARY</span>;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> FAL_CLIENT<span class="operator">=</span>STANDBY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-Logical-Standby（逻辑备库）"><a href="#3-2-Logical-Standby（逻辑备库）" class="headerlink" title="3.2 Logical Standby（逻辑备库）"></a>3.2 Logical Standby（逻辑备库）</h3><h4 id="3-2-1-工作原理"><a href="#3-2-1-工作原理" class="headerlink" title="3.2.1 工作原理"></a>3.2.1 工作原理</h4><ul>
+<li>通过应用SQL语句而非重做日志维护数据一致性</li>
+<li>可以有不同的物理结构（表空间、索引等）</li>
+<li>支持部分表的复制</li>
+</ul>
+<h4 id="3-2-2-使用场景"><a href="#3-2-2-使用场景" class="headerlink" title="3.2.2 使用场景"></a>3.2.2 使用场景</h4><ul>
+<li>需要在备库上创建附加索引或物化视图</li>
+<li>只需要复制部分数据</li>
+<li>需要不同的数据库物理结构</li>
+</ul>
+<h3 id="3-3-Snapshot-Standby（快照备库）"><a href="#3-3-Snapshot-Standby（快照备库）" class="headerlink" title="3.3 Snapshot Standby（快照备库）"></a>3.3 Snapshot Standby（快照备库）</h3><h4 id="3-3-1-工作原理"><a href="#3-3-1-工作原理" class="headerlink" title="3.3.1 工作原理"></a>3.3.1 工作原理</h4><ul>
+<li>临时将物理备库转换为可读写模式</li>
+<li>用于测试、报表或开发</li>
+<li>可以快速转换回同步模式</li>
+</ul>
+<h2 id="4-数据同步模式"><a href="#4-数据同步模式" class="headerlink" title="4. 数据同步模式"></a>4. 数据同步模式</h2><h3 id="4-1-Maximum-Performance（最大性能模式）-默认模式"><a href="#4-1-Maximum-Performance（最大性能模式）-默认模式" class="headerlink" title="4.1 Maximum Performance（最大性能模式）- 默认模式"></a>4.1 Maximum Performance（最大性能模式）- 默认模式</h3><h4 id="4-1-1-特点"><a href="#4-1-1-特点" class="headerlink" title="4.1.1 特点"></a>4.1.1 特点</h4><ul>
+<li><strong>异步传输</strong>：主库不等待备库确认就提交事务</li>
+<li><strong>性能最优</strong>：对主库性能影响最小</li>
+<li><strong>数据风险</strong>：可能有少量数据丢失</li>
+</ul>
+<h4 id="4-1-2-适用场景"><a href="#4-1-2-适用场景" class="headerlink" title="4.1.2 适用场景"></a>4.1.2 适用场景</h4><ul>
+<li>对性能要求高的OLTP系统</li>
+<li>网络延迟较大的环境</li>
+<li>可以接受极少量数据丢失的场景</li>
+</ul>
+<h4 id="4-1-3-配置方法"><a href="#4-1-3-配置方法" class="headerlink" title="4.1.3 配置方法"></a>4.1.3 配置方法</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">SET</span> STANDBY DATABASE <span class="keyword">TO</span> MAXIMIZE PERFORMANCE;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Maximum-Availability（最大可用性模式）"><a href="#4-2-Maximum-Availability（最大可用性模式）" class="headerlink" title="4.2 Maximum Availability（最大可用性模式）"></a>4.2 Maximum Availability（最大可用性模式）</h3><h4 id="4-1-1-特点-1"><a href="#4-1-1-特点-1" class="headerlink" title="4.1.1 特点"></a>4.1.1 特点</h4><ul>
+<li><strong>同步传输</strong>：通常情况下零数据丢失</li>
+<li><strong>网络容错</strong>：网络故障时自动降级为异步模式</li>
+<li><strong>平衡性能</strong>：在性能和数据保护间平衡</li>
+</ul>
+<h4 id="4-2-2-适用场景"><a href="#4-2-2-适用场景" class="headerlink" title="4.2.2 适用场景"></a>4.2.2 适用场景</h4><ul>
+<li>对数据安全要求高但也考虑性能</li>
+<li>网络状况不够稳定的环境</li>
+<li>推荐用于您的医药业务场景</li>
+</ul>
+<h4 id="4-2-3-配置方法"><a href="#4-2-3-配置方法" class="headerlink" title="4.2.3 配置方法"></a>4.2.3 配置方法</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">SET</span> STANDBY DATABASE <span class="keyword">TO</span> MAXIMIZE AVAILABILITY;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR SYNC AFFIRM&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-Maximum-Protection（最大保护模式）"><a href="#4-3-Maximum-Protection（最大保护模式）" class="headerlink" title="4.3 Maximum Protection（最大保护模式）"></a>4.3 Maximum Protection（最大保护模式）</h3><h4 id="4-3-1-特点"><a href="#4-3-1-特点" class="headerlink" title="4.3.1 特点"></a>4.3.1 特点</h4><ul>
+<li><strong>零数据丢失</strong>：绝对保证数据不丢失</li>
+<li><strong>严格同步</strong>：必须等待备库确认才能提交</li>
+<li><strong>性能影响</strong>：对主库性能影响较大</li>
+</ul>
+<h4 id="4-3-2-适用场景"><a href="#4-3-2-适用场景" class="headerlink" title="4.3.2 适用场景"></a>4.3.2 适用场景</h4><ul>
+<li>金融、医疗等对数据要求极其严格的行业</li>
+<li>关键核心业务系统</li>
+<li>网络稳定且延迟很低的环境</li>
+</ul>
+<h4 id="4-3-3-配置方法"><a href="#4-3-3-配置方法" class="headerlink" title="4.3.3 配置方法"></a>4.3.3 配置方法</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">SET</span> STANDBY DATABASE <span class="keyword">TO</span> MAXIMIZE PROTECTION;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR SYNC AFFIRM&#x27;</span>;</span><br><span class="line"><span class="comment">-- 必须配置至少一个SYNC备库</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-实施步骤详解"><a href="#5-实施步骤详解" class="headerlink" title="5. 实施步骤详解"></a>5. 实施步骤详解</h2><h3 id="5-1-环境准备阶段"><a href="#5-1-环境准备阶段" class="headerlink" title="5.1 环境准备阶段"></a>5.1 环境准备阶段</h3><h4 id="5-1-1-硬件和网络准备"><a href="#5-1-1-硬件和网络准备" class="headerlink" title="5.1.1 硬件和网络准备"></a>5.1.1 硬件和网络准备</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 网络连通性测试</span></span><br><span class="line">ping &lt;standby_server_ip&gt;</span><br><span class="line">telnet &lt;standby_server_ip&gt; 1521</span><br><span class="line"></span><br><span class="line"><span class="comment"># 确保两端Oracle版本一致</span></span><br><span class="line">sqlplus / as sysdba</span><br><span class="line">SELECT * FROM V<span class="variable">$VERSION</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-1-2-参数配置检查"><a href="#5-1-2-参数配置检查" class="headerlink" title="5.1.2 参数配置检查"></a>5.1.2 参数配置检查</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 检查主库必要参数</span></span><br><span class="line"><span class="keyword">SELECT</span> NAME, <span class="keyword">VALUE</span> <span class="keyword">FROM</span> V$<span class="keyword">PARAMETER</span> <span class="keyword">WHERE</span> NAME <span class="keyword">IN</span> (</span><br><span class="line">    <span class="string">&#x27;db_unique_name&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_config&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_dest_1&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_dest_2&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_dest_state_2&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;remote_login_passwordfile&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_format&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;log_archive_max_processes&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;fal_server&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;fal_client&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;standby_file_management&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-备库创建步骤"><a href="#5-2-备库创建步骤" class="headerlink" title="5.2 备库创建步骤"></a>5.2 备库创建步骤</h3><h4 id="5-2-1-主库备份"><a href="#5-2-1-主库备份" class="headerlink" title="5.2.1 主库备份"></a>5.2.1 主库备份</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建主库备份</span></span><br><span class="line">rman target /</span><br><span class="line">RMAN&gt; BACKUP DATABASE PLUS ARCHIVELOG;</span><br><span class="line">RMAN&gt; BACKUP CURRENT CONTROLFILE FOR STANDBY;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 或使用更详细的备份命令</span></span><br><span class="line">RMAN&gt; RUN &#123;</span><br><span class="line">    ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;</span><br><span class="line">    BACKUP DATABASE FORMAT <span class="string">&#x27;/backup/db_%U&#x27;</span>;</span><br><span class="line">    BACKUP ARCHIVELOG ALL FORMAT <span class="string">&#x27;/backup/arch_%U&#x27;</span>;</span><br><span class="line">    BACKUP CURRENT CONTROLFILE FOR STANDBY FORMAT <span class="string">&#x27;/backup/standby_control_%U&#x27;</span>;</span><br><span class="line">    RELEASE CHANNEL ch1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-2-2-备库还原"><a href="#5-2-2-备库还原" class="headerlink" title="5.2.2 备库还原"></a>5.2.2 备库还原</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在备库服务器上还原</span></span><br><span class="line">rman target /</span><br><span class="line">RMAN&gt; RESTORE DATABASE FROM BACKUP;</span><br><span class="line">RMAN&gt; RESTORE CONTROLFILE FROM <span class="string">&#x27;/backup/standby_control_xxx&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-2-3-备库配置"><a href="#5-2-3-备库配置" class="headerlink" title="5.2.3 备库配置"></a>5.2.3 备库配置</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 启动备库到mount状态</span></span><br><span class="line">STARTUP MOUNT;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 启动应用日志进程</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">DISCONNECT</span> <span class="keyword">FROM</span> SESSION;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 开启实时应用（11g及以上版本）</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-状态验证"><a href="#5-3-状态验证" class="headerlink" title="5.3 状态验证"></a>5.3 状态验证</h3><h4 id="5-3-1-主库状态检查"><a href="#5-3-1-主库状态检查" class="headerlink" title="5.3.1 主库状态检查"></a>5.3.1 主库状态检查</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 检查数据库角色和状态</span></span><br><span class="line"><span class="keyword">SELECT</span> DATABASE_ROLE, OPEN_MODE <span class="keyword">FROM</span> V$DATABASE;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 检查归档日志传输状态</span></span><br><span class="line"><span class="keyword">SELECT</span> DEST_ID, STATUS, ERROR <span class="keyword">FROM</span> V$ARCHIVE_DEST <span class="keyword">WHERE</span> DEST_ID<span class="operator">=</span><span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 检查备库同步状态</span></span><br><span class="line"><span class="keyword">SELECT</span> SEQUENCE#, FIRST_TIME, NEXT_TIME, ARCHIVED, APPLIED </span><br><span class="line"><span class="keyword">FROM</span> V$ARCHIVED_LOG </span><br><span class="line"><span class="keyword">WHERE</span> DEST_ID<span class="operator">=</span><span class="number">2</span> </span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> SEQUENCE# <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-3-2-备库状态检查"><a href="#5-3-2-备库状态检查" class="headerlink" title="5.3.2 备库状态检查"></a>5.3.2 备库状态检查</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 检查备库角色</span></span><br><span class="line"><span class="keyword">SELECT</span> DATABASE_ROLE, OPEN_MODE <span class="keyword">FROM</span> V$DATABASE;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 检查MRP进程状态</span></span><br><span class="line"><span class="keyword">SELECT</span> PROCESS, STATUS, THREAD#, SEQUENCE#, BLOCK#, BLOCKS </span><br><span class="line"><span class="keyword">FROM</span> V$MANAGED_STANDBY;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 检查应用延迟</span></span><br><span class="line"><span class="keyword">SELECT</span> NAME, <span class="keyword">VALUE</span>, DATUM_TIME, TIME_COMPUTED </span><br><span class="line"><span class="keyword">FROM</span> V$DATAGUARD_STATS </span><br><span class="line"><span class="keyword">WHERE</span> NAME <span class="keyword">IN</span> (<span class="string">&#x27;transport lag&#x27;</span>, <span class="string">&#x27;apply lag&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-切换操作详解"><a href="#6-切换操作详解" class="headerlink" title="6. 切换操作详解"></a>6. 切换操作详解</h2><h3 id="6-1-计划切换（Switchover）"><a href="#6-1-计划切换（Switchover）" class="headerlink" title="6.1 计划切换（Switchover）"></a>6.1 计划切换（Switchover）</h3><h4 id="6-1-1-切换条件检查"><a href="#6-1-1-切换条件检查" class="headerlink" title="6.1.1 切换条件检查"></a>6.1.1 切换条件检查</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 在主库检查是否可以切换</span></span><br><span class="line"><span class="keyword">SELECT</span> SWITCHOVER_STATUS <span class="keyword">FROM</span> V$DATABASE;</span><br><span class="line"><span class="comment">-- 应该返回 &#x27;TO STANDBY&#x27; 或 &#x27;SESSIONS ACTIVE&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 在备库检查</span></span><br><span class="line"><span class="keyword">SELECT</span> SWITCHOVER_STATUS <span class="keyword">FROM</span> V$DATABASE;</span><br><span class="line"><span class="comment">-- 应该返回 &#x27;NOT ALLOWED&#x27; 或 &#x27;SESSIONS ACTIVE&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="6-1-2-执行切换"><a href="#6-1-2-执行切换" class="headerlink" title="6.1.2 执行切换"></a>6.1.2 执行切换</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 步骤1：在当前主库执行</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">COMMIT</span> <span class="keyword">TO</span> SWITCHOVER <span class="keyword">TO</span> STANDBY <span class="keyword">WITH</span> SESSION SHUTDOWN;</span><br><span class="line">SHUTDOWN IMMEDIATE;</span><br><span class="line">STARTUP MOUNT;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤2：在当前备库执行</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">COMMIT</span> <span class="keyword">TO</span> SWITCHOVER <span class="keyword">TO</span> <span class="keyword">PRIMARY</span> <span class="keyword">WITH</span> SESSION SHUTDOWN;</span><br><span class="line">SHUTDOWN IMMEDIATE;</span><br><span class="line">STARTUP;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤3：启动新的备库</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-故障切换（Failover）"><a href="#6-2-故障切换（Failover）" class="headerlink" title="6.2 故障切换（Failover）"></a>6.2 故障切换（Failover）</h3><h4 id="6-2-1-紧急切换（主库完全不可用）"><a href="#6-2-1-紧急切换（主库完全不可用）" class="headerlink" title="6.2.1 紧急切换（主库完全不可用）"></a>6.2.1 紧急切换（主库完全不可用）</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 在备库执行</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE FINISH;</span><br><span class="line"><span class="keyword">ALTER</span> DATABASE ACTIVATE STANDBY DATABASE;</span><br><span class="line">SHUTDOWN IMMEDIATE;</span><br><span class="line">STARTUP;</span><br></pre></td></tr></table></figure>
+
+<h4 id="6-2-2-完整故障切换流程"><a href="#6-2-2-完整故障切换流程" class="headerlink" title="6.2.2 完整故障切换流程"></a>6.2.2 完整故障切换流程</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 步骤1：停止MRP进程</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤2：应用所有可用的重做日志</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE FINISH;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤3：激活备库</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE ACTIVATE STANDBY DATABASE;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤4：重启数据库</span></span><br><span class="line">SHUTDOWN IMMEDIATE;</span><br><span class="line">STARTUP;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 步骤5：验证数据库状态</span></span><br><span class="line"><span class="keyword">SELECT</span> DATABASE_ROLE, OPEN_MODE <span class="keyword">FROM</span> V$DATABASE;</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-监控和维护"><a href="#7-监控和维护" class="headerlink" title="7. 监控和维护"></a>7. 监控和维护</h2><h3 id="7-1-关键监控指标"><a href="#7-1-关键监控指标" class="headerlink" title="7.1 关键监控指标"></a>7.1 关键监控指标</h3><h4 id="7-1-1-传输延迟监控"><a href="#7-1-1-传输延迟监控" class="headerlink" title="7.1.1 传输延迟监控"></a>7.1.1 传输延迟监控</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建监控视图</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> REPLACE <span class="keyword">VIEW</span> DG_LAG_MONITOR <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">    NAME,</span><br><span class="line">    <span class="keyword">VALUE</span>,</span><br><span class="line">    DATUM_TIME,</span><br><span class="line">    <span class="keyword">CASE</span> </span><br><span class="line">        <span class="keyword">WHEN</span> NAME <span class="operator">=</span> <span class="string">&#x27;transport lag&#x27;</span> <span class="keyword">AND</span> TO_NUMBER(SUBSTR(<span class="keyword">VALUE</span>,<span class="number">1</span>,INSTR(<span class="keyword">VALUE</span>,<span class="string">&#x27; &#x27;</span>)<span class="number">-1</span>)) <span class="operator">&gt;</span> <span class="number">300</span> </span><br><span class="line">        <span class="keyword">THEN</span> <span class="string">&#x27;WARNING&#x27;</span></span><br><span class="line">        <span class="keyword">WHEN</span> NAME <span class="operator">=</span> <span class="string">&#x27;apply lag&#x27;</span> <span class="keyword">AND</span> TO_NUMBER(SUBSTR(<span class="keyword">VALUE</span>,<span class="number">1</span>,INSTR(<span class="keyword">VALUE</span>,<span class="string">&#x27; &#x27;</span>)<span class="number">-1</span>)) <span class="operator">&gt;</span> <span class="number">600</span> </span><br><span class="line">        <span class="keyword">THEN</span> <span class="string">&#x27;WARNING&#x27;</span></span><br><span class="line">        <span class="keyword">ELSE</span> <span class="string">&#x27;OK&#x27;</span></span><br><span class="line">    <span class="keyword">END</span> <span class="keyword">AS</span> STATUS</span><br><span class="line"><span class="keyword">FROM</span> V$DATAGUARD_STATS </span><br><span class="line"><span class="keyword">WHERE</span> NAME <span class="keyword">IN</span> (<span class="string">&#x27;transport lag&#x27;</span>, <span class="string">&#x27;apply lag&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 定期检查</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> DG_LAG_MONITOR;</span><br></pre></td></tr></table></figure>
+
+<h4 id="7-1-2-同步状态监控"><a href="#7-1-2-同步状态监控" class="headerlink" title="7.1.2 同步状态监控"></a>7.1.2 同步状态监控</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建同步监控脚本</span></span><br><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">    ds.dest_id,</span><br><span class="line">    ds.status,</span><br><span class="line">    ds.error,</span><br><span class="line">    al.sequence# <span class="keyword">as</span> last_archived_seq,</span><br><span class="line">    als.sequence# <span class="keyword">as</span> last_applied_seq,</span><br><span class="line">    al.sequence# <span class="operator">-</span> als.sequence# <span class="keyword">as</span> lag_sequences</span><br><span class="line"><span class="keyword">FROM</span> </span><br><span class="line">    v$archive_dest ds,</span><br><span class="line">    (<span class="keyword">SELECT</span> sequence# <span class="keyword">FROM</span> v$archived_log <span class="keyword">WHERE</span> dest_id<span class="operator">=</span><span class="number">1</span> <span class="keyword">AND</span> ROWNUM<span class="operator">=</span><span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> sequence# <span class="keyword">DESC</span>) al,</span><br><span class="line">    (<span class="keyword">SELECT</span> sequence# <span class="keyword">FROM</span> v$archived_log <span class="keyword">WHERE</span> dest_id<span class="operator">=</span><span class="number">2</span> <span class="keyword">AND</span> applied<span class="operator">=</span><span class="string">&#x27;YES&#x27;</span> <span class="keyword">AND</span> ROWNUM<span class="operator">=</span><span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> sequence# <span class="keyword">DESC</span>) als</span><br><span class="line"><span class="keyword">WHERE</span> ds.dest_id <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-日常维护任务"><a href="#7-2-日常维护任务" class="headerlink" title="7.2 日常维护任务"></a>7.2 日常维护任务</h3><h4 id="7-2-1-归档日志管理"><a href="#7-2-1-归档日志管理" class="headerlink" title="7.2.1 归档日志管理"></a>7.2.1 归档日志管理</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 检查归档日志空间使用</span></span><br><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">    dest_name,</span><br><span class="line">    status,</span><br><span class="line">    binding,</span><br><span class="line">    name_space,</span><br><span class="line">    used_space,</span><br><span class="line">    space_limit,</span><br><span class="line">    ROUND(used_space<span class="operator">/</span>space_limit<span class="operator">*</span><span class="number">100</span>,<span class="number">2</span>) <span class="keyword">as</span> usage_pct</span><br><span class="line"><span class="keyword">FROM</span> V$RECOVERY_AREA_USAGE;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 自动清理过期归档日志</span></span><br><span class="line">RMAN<span class="operator">&gt;</span> CROSSCHECK ARCHIVELOG <span class="keyword">ALL</span>;</span><br><span class="line">RMAN<span class="operator">&gt;</span> <span class="keyword">DELETE</span> EXPIRED ARCHIVELOG <span class="keyword">ALL</span>;</span><br><span class="line">RMAN<span class="operator">&gt;</span> <span class="keyword">DELETE</span> ARCHIVELOG <span class="keyword">ALL</span> COMPLETED BEFORE <span class="string">&#x27;SYSDATE-7&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="7-2-2-性能优化"><a href="#7-2-2-性能优化" class="headerlink" title="7.2.2 性能优化"></a>7.2.2 性能优化</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 调整日志传输并发度</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_MAX_PROCESSES<span class="operator">=</span><span class="number">5</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 优化网络缓冲区</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC NET_TIMEOUT=30 REOPEN=15&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 启用压缩传输（11g及以上）</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC COMPRESSION=ENABLE&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-故障排除指南"><a href="#8-故障排除指南" class="headerlink" title="8. 故障排除指南"></a>8. 故障排除指南</h2><h3 id="8-1-常见问题及解决方案"><a href="#8-1-常见问题及解决方案" class="headerlink" title="8.1 常见问题及解决方案"></a>8.1 常见问题及解决方案</h3><h4 id="8-1-1-传输中断问题"><a href="#8-1-1-传输中断问题" class="headerlink" title="8.1.1 传输中断问题"></a>8.1.1 传输中断问题</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 问题诊断</span></span><br><span class="line"><span class="keyword">SELECT</span> MESSAGE <span class="keyword">FROM</span> V$DATAGUARD_STATUS <span class="keyword">WHERE</span> SEVERITY <span class="keyword">IN</span> (<span class="string">&#x27;Error&#x27;</span>,<span class="string">&#x27;Warning&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 解决方案</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_STATE_2<span class="operator">=</span>DEFER;  <span class="comment">-- 暂停传输</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_STATE_2<span class="operator">=</span>ENABLE; <span class="comment">-- 重新启用</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 手动同步缺失的归档日志</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;</span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="8-1-2-应用延迟问题"><a href="#8-1-2-应用延迟问题" class="headerlink" title="8.1.2 应用延迟问题"></a>8.1.2 应用延迟问题</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 检查MRP进程状态</span></span><br><span class="line"><span class="keyword">SELECT</span> PROCESS, STATUS, SEQUENCE# <span class="keyword">FROM</span> V$MANAGED_STANDBY <span class="keyword">WHERE</span> PROCESS <span class="keyword">LIKE</span> <span class="string">&#x27;MRP%&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 重启MRP进程</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;</span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 启用并行应用（12c及以上）</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span> PARALLEL <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="8-1-3-网络问题诊断"><a href="#8-1-3-网络问题诊断" class="headerlink" title="8.1.3 网络问题诊断"></a>8.1.3 网络问题诊断</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测试TNS连接</span></span><br><span class="line">tnsping STANDBY</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试SQL*Net连接</span></span><br><span class="line">sqlplus sys/password@STANDBY as sysdba</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查监听器状态</span></span><br><span class="line">lsnrctl status</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-应急处理流程"><a href="#8-2-应急处理流程" class="headerlink" title="8.2 应急处理流程"></a>8.2 应急处理流程</h3><h4 id="8-2-1-主库故障应急流程"><a href="#8-2-1-主库故障应急流程" class="headerlink" title="8.2.1 主库故障应急流程"></a>8.2.1 主库故障应急流程</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. 确认主库真正不可用（网络、电源、硬件）</span><br><span class="line">2. 评估数据丢失风险</span><br><span class="line">3. 决定是否执行failover</span><br><span class="line">4. 在备库执行failover操作</span><br><span class="line">5. 重新配置应用程序连接</span><br><span class="line">6. 通知相关人员</span><br><span class="line">7. 记录故障和处理过程</span><br></pre></td></tr></table></figure>
+
+<h4 id="8-2-2-备库故障应急流程"><a href="#8-2-2-备库故障应急流程" class="headerlink" title="8.2.2 备库故障应急流程"></a>8.2.2 备库故障应急流程</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 主库继续正常运行</span><br><span class="line">2. 检查归档日志传输状态</span><br><span class="line">3. 修复备库问题</span><br><span class="line">4. 重新同步备库</span><br><span class="line">5. 验证同步状态</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-性能调优建议"><a href="#9-性能调优建议" class="headerlink" title="9. 性能调优建议"></a>9. 性能调优建议</h2><h3 id="9-1-网络优化"><a href="#9-1-网络优化" class="headerlink" title="9.1 网络优化"></a>9.1 网络优化</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 启用网络压缩</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC COMPRESSION=ENABLE&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 调整网络超时参数</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_2<span class="operator">=</span><span class="string">&#x27;SERVICE=STANDBY LGWR ASYNC NET_TIMEOUT=30&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 优化SDU和TDU参数（在tnsnames.ora中）</span></span><br><span class="line">STANDBY <span class="operator">=</span></span><br><span class="line">  (DESCRIPTION <span class="operator">=</span></span><br><span class="line">    (ADDRESS <span class="operator">=</span> (PROTOCOL <span class="operator">=</span> TCP)(HOST <span class="operator">=</span> standby_host)(PORT <span class="operator">=</span> <span class="number">1521</span>))</span><br><span class="line">    (CONNECT_DATA <span class="operator">=</span></span><br><span class="line">      (SERVER <span class="operator">=</span> DEDICATED)</span><br><span class="line">      (SERVICE_NAME <span class="operator">=</span> standby_service)</span><br><span class="line">      (SDU <span class="operator">=</span> <span class="number">32767</span>)</span><br><span class="line">      (TDU <span class="operator">=</span> <span class="number">32767</span>)</span><br><span class="line">    )</span><br><span class="line">  )</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-I-O优化"><a href="#9-2-I-O优化" class="headerlink" title="9.2 I&#x2F;O优化"></a>9.2 I&#x2F;O优化</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 启用异步I/O</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> DISK_ASYNCH_IO<span class="operator">=</span><span class="literal">TRUE</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 调整归档日志大小</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE <span class="keyword">ADD</span> LOGFILE <span class="keyword">GROUP</span> <span class="number">4</span> <span class="string">&#x27;/u01/oradata/redo04.log&#x27;</span> SIZE <span class="number">1</span>G;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 优化归档目录</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_DEST_1<span class="operator">=</span><span class="string">&#x27;LOCATION=/fast_disk/archive MANDATORY&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-3-并行处理优化"><a href="#9-3-并行处理优化" class="headerlink" title="9.3 并行处理优化"></a>9.3 并行处理优化</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 启用并行恢复（12c+）</span></span><br><span class="line"><span class="keyword">ALTER</span> DATABASE RECOVER MANAGED STANDBY DATABASE <span class="keyword">USING</span> <span class="keyword">CURRENT</span> LOGFILE <span class="keyword">DISCONNECT</span> PARALLEL <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 调整并行进程数</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">SET</span> LOG_ARCHIVE_MAX_PROCESSES<span class="operator">=</span><span class="number">8</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="10-最佳实践总结"><a href="#10-最佳实践总结" class="headerlink" title="10. 最佳实践总结"></a>10. 最佳实践总结</h2><h3 id="10-1-配置最佳实践"><a href="#10-1-配置最佳实践" class="headerlink" title="10.1 配置最佳实践"></a>10.1 配置最佳实践</h3><ol>
+<li><strong>使用Physical Standby</strong>：提供最完整的数据保护</li>
+<li><strong>选择Maximum Availability模式</strong>：平衡性能和数据安全</li>
+<li><strong>启用Real-time Apply</strong>：减少恢复时间</li>
+<li><strong>配置Fast-Start Failover</strong>：实现自动故障切换</li>
+<li><strong>使用压缩传输</strong>：减少网络带宽占用</li>
+</ol>
+<h3 id="10-2-运维最佳实践"><a href="#10-2-运维最佳实践" class="headerlink" title="10.2 运维最佳实践"></a>10.2 运维最佳实践</h3><ol>
+<li><strong>定期测试切换</strong>：确保切换流程可用</li>
+<li><strong>监控关键指标</strong>：及时发现问题</li>
+<li><strong>定期清理归档</strong>：避免磁盘空间不足</li>
+<li><strong>文档化操作流程</strong>：标准化运维操作</li>
+<li><strong>培训运维人员</strong>：确保操作正确</li>
+</ol>
+<h3 id="10-3-安全最佳实践"><a href="#10-3-安全最佳实践" class="headerlink" title="10.3 安全最佳实践"></a>10.3 安全最佳实践</h3><ol>
+<li><strong>启用加密传输</strong>：保护数据传输安全</li>
+<li><strong>配置防火墙规则</strong>：限制网络访问</li>
+<li><strong>定期更新补丁</strong>：保持系统安全</li>
+<li><strong>监控审计日志</strong>：跟踪系统访问</li>
+<li><strong>备份控制文件</strong>：确保可恢复性</li>
+</ol>
+<h2 id="11-针对您业务的具体建议"><a href="#11-针对您业务的具体建议" class="headerlink" title="11. 针对您业务的具体建议"></a>11. 针对您业务的具体建议</h2><h3 id="11-1-推荐配置"><a href="#11-1-推荐配置" class="headerlink" title="11.1 推荐配置"></a>11.1 推荐配置</h3><ul>
+<li><strong>同步模式</strong>：Maximum Availability（最大可用性）</li>
+<li><strong>备库类型</strong>：Physical Standby</li>
+<li><strong>传输方式</strong>：LGWR ASYNC with COMPRESSION</li>
+<li><strong>应用方式</strong>：Real-time Apply</li>
+<li><strong>监控频率</strong>：每5分钟检查一次同步状态</li>
+</ul>
+<h3 id="11-2-RPO-RTO预期"><a href="#11-2-RPO-RTO预期" class="headerlink" title="11.2 RPO&#x2F;RTO预期"></a>11.2 RPO&#x2F;RTO预期</h3><ul>
+<li><strong>RPO</strong>：5-15分钟（取决于网络状况）</li>
+<li><strong>RTO</strong>：10-30分钟（包括应用程序重新连接时间）</li>
+</ul>
+<h3 id="11-3-成本考虑"><a href="#11-3-成本考虑" class="headerlink" title="11.3 成本考虑"></a>11.3 成本考虑</h3><ul>
+<li><strong>Oracle许可</strong>：备库在灾备用途下通常不需要额外许可</li>
+<li><strong>硬件成本</strong>：云端ECS + RDS成本</li>
+<li><strong>网络成本</strong>：专线或VPN连接成本</li>
+<li><strong>运维成本</strong>：培训和日常维护成本</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://your-domain.com/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/" title="OracleDataGuard数据同步方案" target="_blank" rel="external">https://your-domain.com/2025/06/16/OracleDataGuard数据同步方案/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/noodleOnce" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/noodleOnce" target="_blank"><span class="text-dark">汪崇虎</span><small class="ml-1x">Java &amp; 管理</small></a></h3>
+        <div>芝兰生于深林，不以无人而不芳; 君子修道立德，不谓穷困而改节。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2025/06/19/%E5%9C%B0%E7%90%83%E7%9A%84%E4%BD%8F%E5%9D%80/" title="地球在宇宙中的住址"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/" title="医药商业公司ERP高可用架构方案"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="beian">
+            <a href="https://beian.miit.gov.cn/" target="_blank">鄂ICP备2025103743号-1</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .beian {
+        margin-top: 5px;
+        color: #efefef;
+        font-size: 12px;
+    }
+
+    .beian a {
+        color: #efefef;
+        text-decoration: none;
+    }
+
+    .beian a:hover {
+        color: #efefef;
+    }
+</style>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>

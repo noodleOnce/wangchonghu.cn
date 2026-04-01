@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>商品搜索性能问题排查 | 汪崇虎个人博客</title>
+  <meta name="description" content="启动arthas服务 1231. cd &#x2F;usr&#x2F;local&#x2F;src&#x2F;2. source &#x2F;etc&#x2F;profile3. .&#x2F;as.sh  定位性能瓶颈 123456789101112131415161718192021222324252627# 监控耗时大于1秒钟的线程[arthas@13]$ trace com.ylsk.web.mobileApi.merchandise.service.Mo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="商品搜索性能问题排查">
+<meta property="og:url" content="https://your-domain.com/2025/06/23/%E5%95%86%E5%93%81%E6%90%9C%E7%B4%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/index.html">
+<meta property="og:site_name" content="汪崇虎的博客">
+<meta property="og:description" content="启动arthas服务 1231. cd &#x2F;usr&#x2F;local&#x2F;src&#x2F;2. source &#x2F;etc&#x2F;profile3. .&#x2F;as.sh  定位性能瓶颈 123456789101112131415161718192021222324252627# 监控耗时大于1秒钟的线程[arthas@13]$ trace com.ylsk.web.mobileApi.merchandise.service.Mo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-23T11:37:53.000Z">
+<meta property="article:modified_time" content="2025-06-23T11:42:02.140Z">
+<meta property="article:author" content="汪崇虎">
+<meta property="article:tag" content="性能">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://your-domain.com/2025/06/23/%E5%95%86%E5%93%81%E6%90%9C%E7%B4%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="汪崇虎的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/noodleOnce" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">汪崇虎</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Java &amp; 管理</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 武汉, 中国</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欲成大树，莫与草争<br>将军有剑，不斩苍蝇</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag">AI编程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag">java基础</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%89%AB%E7%9B%B2/" rel="tag">扫盲</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" rel="tag">技术设计</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag">笔记</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%A1%E7%90%86/" rel="tag">管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag">网络</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A4%E7%9F%A5/" rel="tag">认知</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag">项目管理</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/AI%E7%BC%96%E7%A8%8B/" style="font-size: 13.4px;">AI编程</a> <a href="/tags/java%E5%9F%BA%E7%A1%80/" style="font-size: 13.2px;">java基础</a> <a href="/tags/mysql/" style="font-size: 13.4px;">mysql</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 14px;">工具</a> <a href="/tags/%E6%80%A7%E8%83%BD/" style="font-size: 13px;">性能</a> <a href="/tags/%E6%89%AB%E7%9B%B2/" style="font-size: 13.6px;">扫盲</a> <a href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" style="font-size: 13.4px;">技术设计</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 13.2px;">投资</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13.4px;">架构</a> <a href="/tags/%E7%AC%94%E8%AE%B0/" style="font-size: 13.8px;">笔记</a> <a href="/tags/%E7%AE%A1%E7%90%86/" style="font-size: 13px;">管理</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 13px;">网络</a> <a href="/tags/%E8%AE%A4%E7%9F%A5/" style="font-size: 13px;">认知</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13.6px;">运维</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" style="font-size: 13.4px;">项目管理</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">三月 2026</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/02/">二月 2026</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">十二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/11/">十一月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">十月 2025</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/06/">六月 2025</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">五月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">四月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/03/">三月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">一月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/05/">五月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">一月 2024</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">十一月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/13/UI%E6%9C%AF%E8%AF%AD/" class="title">UI术语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-13T10:00:43.000Z" itemprop="datePublished">2026-03-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/09/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%87%BA%E5%8F%A3IP%E5%92%8C%E5%85%A5%E5%8F%A3IP/" class="title">服务器的出口IP和入口IP</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-09T03:59:59.000Z" itemprop="datePublished">2026-03-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/05/ClaudeCode%E5%BC%80%E5%8F%91%E8%80%85%E9%80%9F%E6%9F%A5%E8%A1%A8/" class="title">ClaudeCode开发者速查表</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-04T16:08:08.000Z" itemprop="datePublished">2026-03-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/03/%E4%B8%AA%E4%BA%BA%E6%89%80%E5%BE%97%E7%A8%8E/" class="title">个人所得税</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-03T02:00:06.000Z" itemprop="datePublished">2026-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/02/27/%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%E7%B2%BE%E9%80%89/" class="title">阮一峰周刊精选</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-02-27T01:45:10.000Z" itemprop="datePublished">2026-02-27</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-商品搜索性能问题排查" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      商品搜索性能问题排查
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2025/06/23/%E5%95%86%E5%93%81%E6%90%9C%E7%B4%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" class="article-date">
+	  <time datetime="2025-06-23T11:37:53.000Z" itemprop="datePublished">2025-06-23</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2025/06/23/%E5%95%86%E5%93%81%E6%90%9C%E7%B4%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <ol>
+<li><p><strong>启动arthas服务</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. <span class="built_in">cd</span> /usr/local/src/</span><br><span class="line">2. <span class="built_in">source</span> /etc/profile</span><br><span class="line">3. ./as.sh</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>定位性能瓶颈</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 监控耗时大于1秒钟的线程</span></span><br><span class="line">[arthas@13]$ trace com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service merchandiseSearch <span class="string">&#x27;#cost &gt; 1000&#x27;</span></span><br><span class="line">Press Q or Ctrl+C to abort.</span><br><span class="line">Affect(class count: 1 , method count: 1) cost <span class="keyword">in</span> 243 ms, listenerId: 7</span><br><span class="line">`---ts=2025-06-18 18:33:52.078;thread_name=qtp1405163418-423;<span class="built_in">id</span>=423;is_daemon=<span class="literal">false</span>;priority=5;TCCL=org.springframework.boot.loader.LaunchedURLClassLoader@49c2faae</span><br><span class="line">    `---[6994.776167ms] com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service:merchandiseSearch()</span><br><span class="line">        +---[0.00% 0.009284ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchMerchandiseV2Param:getKeyWord() <span class="comment">#283</span></span><br><span class="line">        +---[0.00% 0.006202ms ] com.ylsk.common.utils.StringUtils:isNotBlank() <span class="comment">#284</span></span><br><span class="line">        +---[0.00% 0.006645ms ] com.ylsk.web.mobileApi.merchandise.entity.MerSearchV2ParamsVo:&lt;init&gt;() <span class="comment">#289</span></span><br><span class="line">        +---[0.00% 0.104357ms ] org.springframework.beans.BeanUtils:copyProperties() <span class="comment">#290</span></span><br><span class="line">        +---[0.00% 0.02407ms ] com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service:fillMustMerList() <span class="comment">#292</span></span><br><span class="line">        +---[92.31% 6456.983087ms ] com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service:loadMerInfoBySearch() <span class="comment">#295</span></span><br><span class="line">        +---[0.00% 0.012519ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchResultVo:getMerchandiseList() <span class="comment">#298</span></span><br><span class="line">        +---[0.00% 0.006747ms ] org.springframework.util.CollectionUtils:isEmpty() <span class="comment">#299</span></span><br><span class="line">        +---[0.10% 7.320169ms ] com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service:loadOtherInfoToMerList() <span class="comment">#301</span></span><br><span class="line">        +---[0.00% 0.006406ms ] org.assertj.core.util.Lists:newArrayList() <span class="comment">#306</span></span><br><span class="line">        +---[0.00% 0.009533ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchResultVo:getTotalSize() <span class="comment">#308</span></span><br><span class="line">        +---[0.00% 0.006345ms ] com.ylsk.platform.Conv:NL() <span class="comment">#308</span></span><br><span class="line">        +---[0.00% 0.005198ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchResultVo:getMerchandiseList() <span class="comment">#309</span></span><br><span class="line">        +---[0.00% 0.008116ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchMerchandiseV2Param:getCustId() <span class="comment">#312</span></span><br><span class="line">        +---[7.56% 528.538416ms ] com.ylsk.web.mobileApi.merchandise.service.MobileMerchandiseV2Service:fillMerchandiseBuyGiveRemain() <span class="comment">#313</span></span><br><span class="line">        +---[0.00% 0.00982ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchMerchandiseV2Param:getPage() <span class="comment">#316</span></span><br><span class="line">        +---[0.00% 0.007291ms ] com.ylsk.web.mobileApi.merchandise.entity.SearchMerchandiseV2Param:getPageSize() <span class="comment">#317</span></span><br><span class="line">        +---[0.00% 0.013504ms ] com.ylsk.common.utils.Pagination:getIsCanGoNext() <span class="comment">#318</span></span><br><span class="line">        +---[0.00% min=0.003737ms,max=0.009941ms,total=0.013678ms,count=2] com.ylsk.web.mobileApi.merchandise.entity.SearchMerchandiseV2Param:getBranchId() <span class="comment">#323</span></span><br><span class="line">        +---[0.00% 0.004901ms ] com.yvan.platform.StringUtils:isNullOrEmpty() <span class="comment">#323</span></span><br><span class="line">        `---[0.02% 1.31669ms ] com.ylsk.web.mobileApi.common.service.CommonDataService:getDeliverTips() <span class="comment">#324</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>主要性能瓶颈在ES搜索：loadMerInfoBySearch() - 占用 92.31%，耗时 6456.98ms</strong></p>
+</li>
+<li><p><strong>查看ES集群中各节点的健康情况</strong></p>
+</li>
+</ol>
+<ul>
+<li>GET &#x2F;_nodes&#x2F;stats<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;cpu&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;percent&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span>                   <span class="comment">// CPU使用率：2%</span></span><br><span class="line">    <span class="attr">&quot;load_average&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;1m&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span> <span class="attr">&quot;5m&quot;</span><span class="punctuation">:</span> <span class="number">0.03</span><span class="punctuation">,</span> <span class="attr">&quot;15m&quot;</span><span class="punctuation">:</span> <span class="number">0.05</span> <span class="comment">// 系统负载很低</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;mem&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;total_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">8200249344</span><span class="punctuation">,</span>   <span class="comment">// 总内存：7.6GB</span></span><br><span class="line">    <span class="attr">&quot;free_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">141103104</span><span class="punctuation">,</span>     <span class="comment">// 空闲内存：134MB</span></span><br><span class="line">    <span class="attr">&quot;used_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">8059146240</span><span class="punctuation">,</span>    <span class="comment">// 已用内存：7.5GB</span></span><br><span class="line">    <span class="attr">&quot;used_percent&quot;</span><span class="punctuation">:</span> <span class="number">98</span>              <span class="comment">// 🚨内存使用率：98%</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line"><span class="attr">&quot;jvm&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;uptime_in_millis&quot;</span><span class="punctuation">:</span> <span class="number">57706435160</span><span class="punctuation">,</span>  <span class="comment">// JVM运行时间：668天</span></span><br><span class="line">  <span class="attr">&quot;mem&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;heap_used_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">2111900680</span><span class="punctuation">,</span>    <span class="comment">// 堆内存使用：2GB</span></span><br><span class="line">    <span class="attr">&quot;heap_used_percent&quot;</span><span class="punctuation">:</span> <span class="number">49</span><span class="punctuation">,</span>             <span class="comment">// 堆使用率：49%</span></span><br><span class="line">    <span class="attr">&quot;heap_max_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">4260102144</span><span class="punctuation">,</span>     <span class="comment">// 最大堆内存：4GB</span></span><br><span class="line">    <span class="attr">&quot;non_heap_used_in_bytes&quot;</span><span class="punctuation">:</span> <span class="number">174629224</span>  <span class="comment">// 非堆内存：166MB</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="5">
+<li><strong>查看所有索引的健康状态</strong></li>
+</ol>
+<ul>
+<li>GET &#x2F;_cat&#x2F;indices?v</li>
+</ul>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><ul>
+<li>最后得出结论，ES集群3个节点都暴露出内存不足的问题(内存使用率高达98%，含文件缓存)</li>
+<li>进入服务器验证内存使用情况，A、B、C3个节点仅B节点内存使用率高达95%，其它两个节点高达75%，不含文件缓存</li>
+<li>回顾前端时间B节点多安装了两个中间件(rabbitmq和Kafka，公司降成本，将华为云服务调整为自主部署)</li>
+<li>临时调小JVM内存到3G，事后升级各个节点的内存到16G</li>
+<li>最终性能问题得以解决</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://your-domain.com/2025/06/23/%E5%95%86%E5%93%81%E6%90%9C%E7%B4%A2%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" title="商品搜索性能问题排查" target="_blank" rel="external">https://your-domain.com/2025/06/23/商品搜索性能问题排查/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/noodleOnce" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/noodleOnce" target="_blank"><span class="text-dark">汪崇虎</span><small class="ml-1x">Java &amp; 管理</small></a></h3>
+        <div>芝兰生于深林，不以无人而不芳; 君子修道立德，不谓穷困而改节。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2025/10/15/Kubernetes%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/" title="Kubernetes的核心概念"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2025/06/19/%E5%9C%B0%E7%90%83%E7%9A%84%E4%BD%8F%E5%9D%80/" title="地球在宇宙中的住址"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="beian">
+            <a href="https://beian.miit.gov.cn/" target="_blank">鄂ICP备2025103743号-1</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .beian {
+        margin-top: 5px;
+        color: #efefef;
+        font-size: 12px;
+    }
+
+    .beian a {
+        color: #efefef;
+        text-decoration: none;
+    }
+
+    .beian a:hover {
+        color: #efefef;
+    }
+</style>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>

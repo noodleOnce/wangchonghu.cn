@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>医药商业公司ERP高可用架构方案 | 汪崇虎个人博客</title>
+  <meta name="description" content="1. 系统架构概述1.1 现状分析 电商系统: 华为云部署，已具备高可用性 ERP系统: 本地单机部署（Windows Server 2016 + Oracle + JDK8 + Redis + Tomcat） 主要问题: 海南频繁停电导致ERP系统不可用，业务中断  1.2 目标架构构建本地+云端双活&#x2F;主备架构，确保业务连续性，实现RPO≤15分钟，RTO≤30分钟。 2. 整体架构设">
+<meta property="og:type" content="article">
+<meta property="og:title" content="医药商业公司ERP高可用架构方案">
+<meta property="og:url" content="https://your-domain.com/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="汪崇虎的博客">
+<meta property="og:description" content="1. 系统架构概述1.1 现状分析 电商系统: 华为云部署，已具备高可用性 ERP系统: 本地单机部署（Windows Server 2016 + Oracle + JDK8 + Redis + Tomcat） 主要问题: 海南频繁停电导致ERP系统不可用，业务中断  1.2 目标架构构建本地+云端双活&#x2F;主备架构，确保业务连续性，实现RPO≤15分钟，RTO≤30分钟。 2. 整体架构设">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-16T02:48:19.000Z">
+<meta property="article:modified_time" content="2025-06-16T10:42:21.890Z">
+<meta property="article:author" content="汪崇虎">
+<meta property="article:tag" content="架构">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://your-domain.com/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="汪崇虎的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/noodleOnce" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">汪崇虎</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Java &amp; 管理</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> 武汉, 中国</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">项目</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">书单</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欲成大树，莫与草争<br>将军有剑，不斩苍蝇</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag">AI编程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java%E5%9F%BA%E7%A1%80/" rel="tag">java基础</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/" rel="tag">mysql</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag">工具</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%80%A7%E8%83%BD/" rel="tag">性能</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%89%AB%E7%9B%B2/" rel="tag">扫盲</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" rel="tag">技术设计</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag">笔记</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%A1%E7%90%86/" rel="tag">管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag">网络</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%A4%E7%9F%A5/" rel="tag">认知</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="tag">项目管理</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/AI%E7%BC%96%E7%A8%8B/" style="font-size: 13.4px;">AI编程</a> <a href="/tags/java%E5%9F%BA%E7%A1%80/" style="font-size: 13.2px;">java基础</a> <a href="/tags/mysql/" style="font-size: 13.4px;">mysql</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/%E5%B7%A5%E5%85%B7/" style="font-size: 14px;">工具</a> <a href="/tags/%E6%80%A7%E8%83%BD/" style="font-size: 13px;">性能</a> <a href="/tags/%E6%89%AB%E7%9B%B2/" style="font-size: 13.6px;">扫盲</a> <a href="/tags/%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1/" style="font-size: 13.4px;">技术设计</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 13.2px;">投资</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13.4px;">架构</a> <a href="/tags/%E7%AC%94%E8%AE%B0/" style="font-size: 13.8px;">笔记</a> <a href="/tags/%E7%AE%A1%E7%90%86/" style="font-size: 13px;">管理</a> <a href="/tags/%E7%BD%91%E7%BB%9C/" style="font-size: 13px;">网络</a> <a href="/tags/%E8%AE%A4%E7%9F%A5/" style="font-size: 13px;">认知</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13.6px;">运维</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" style="font-size: 13.4px;">项目管理</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">三月 2026</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/02/">二月 2026</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">一月 2026</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">十二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/11/">十一月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">十月 2025</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/06/">六月 2025</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/05/">五月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/04/">四月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/03/">三月 2025</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">一月 2025</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/05/">五月 2024</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">四月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/01/">一月 2024</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/11/">十一月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">十月 2023</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/13/UI%E6%9C%AF%E8%AF%AD/" class="title">UI术语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-13T10:00:43.000Z" itemprop="datePublished">2026-03-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/09/%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%87%BA%E5%8F%A3IP%E5%92%8C%E5%85%A5%E5%8F%A3IP/" class="title">服务器的出口IP和入口IP</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-09T03:59:59.000Z" itemprop="datePublished">2026-03-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/05/ClaudeCode%E5%BC%80%E5%8F%91%E8%80%85%E9%80%9F%E6%9F%A5%E8%A1%A8/" class="title">ClaudeCode开发者速查表</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-04T16:08:08.000Z" itemprop="datePublished">2026-03-05</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/03/03/%E4%B8%AA%E4%BA%BA%E6%89%80%E5%BE%97%E7%A8%8E/" class="title">个人所得税</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-03-03T02:00:06.000Z" itemprop="datePublished">2026-03-03</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2026/02/27/%E9%98%AE%E4%B8%80%E5%B3%B0%E5%91%A8%E5%88%8A%E7%B2%BE%E9%80%89/" class="title">阮一峰周刊精选</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2026-02-27T01:45:10.000Z" itemprop="datePublished">2026-02-27</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-海南ERP高可用架构方案" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      医药商业公司ERP高可用架构方案
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/" class="article-date">
+	  <time datetime="2025-06-16T02:48:19.000Z" itemprop="datePublished">2025-06-16</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-系统架构概述"><a href="#1-系统架构概述" class="headerlink" title="1. 系统架构概述"></a>1. 系统架构概述</h2><h3 id="1-1-现状分析"><a href="#1-1-现状分析" class="headerlink" title="1.1 现状分析"></a>1.1 现状分析</h3><ul>
+<li><strong>电商系统</strong>: 华为云部署，已具备高可用性</li>
+<li><strong>ERP系统</strong>: 本地单机部署（Windows Server 2016 + Oracle + JDK8 + Redis + Tomcat）</li>
+<li><strong>主要问题</strong>: 海南频繁停电导致ERP系统不可用，业务中断</li>
+</ul>
+<h3 id="1-2-目标架构"><a href="#1-2-目标架构" class="headerlink" title="1.2 目标架构"></a>1.2 目标架构</h3><p>构建本地+云端双活&#x2F;主备架构，确保业务连续性，实现RPO≤15分钟，RTO≤30分钟。</p>
+<h2 id="2-整体架构设计"><a href="#2-整体架构设计" class="headerlink" title="2. 整体架构设计"></a>2. 整体架构设计</h2><h3 id="2-1-架构拓扑"><a href="#2-1-架构拓扑" class="headerlink" title="2.1 架构拓扑"></a>2.1 架构拓扑</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────┐    ┌─────────────────┐</span><br><span class="line">│   电商系统      │    │   WMS系统       │</span><br><span class="line">│  (华为云)       │    │   (待部署)      │</span><br><span class="line">└─────────────────┘    └─────────────────┘</span><br><span class="line">         │                       │</span><br><span class="line">         └───────────┬───────────┘</span><br><span class="line">                     │</span><br><span class="line">    ┌────────────────┼────────────────┐</span><br><span class="line">    │                │                │</span><br><span class="line">┌───▼────┐    ┌──────▼──────┐    ┌───▼────┐</span><br><span class="line">│本地ERP │    │   数据同步   │    │云端ERP │</span><br><span class="line">│(主环境)│◄──►│     网关     │◄──►│(备环境)│</span><br><span class="line">└────────┘    └─────────────┘    └────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-核心组件"><a href="#2-2-核心组件" class="headerlink" title="2.2 核心组件"></a>2.2 核心组件</h3><ul>
+<li><strong>本地ERP环境</strong>: 主要业务环境</li>
+<li><strong>云端ERP环境</strong>: 备用环境（华为云）</li>
+<li><strong>数据同步机制</strong>: 实时&#x2F;准实时数据同步</li>
+<li><strong>切换机制</strong>: 自动&#x2F;手动切换</li>
+<li><strong>监控告警</strong>: 全方位监控体系</li>
+</ul>
+<h2 id="3-详细技术方案"><a href="#3-详细技术方案" class="headerlink" title="3. 详细技术方案"></a>3. 详细技术方案</h2><h3 id="3-1-云端ERP环境搭建"><a href="#3-1-云端ERP环境搭建" class="headerlink" title="3.1 云端ERP环境搭建"></a>3.1 云端ERP环境搭建</h3><h4 id="3-1-1-基础设施"><a href="#3-1-1-基础设施" class="headerlink" title="3.1.1 基础设施"></a>3.1.1 基础设施</h4><ul>
+<li><strong>计算资源</strong>: <ul>
+<li>ECS实例：4核8GB（可按需扩展）</li>
+<li>操作系统：Windows Server 2019&#x2F;2022</li>
+</ul>
+</li>
+<li><strong>数据库</strong>: <ul>
+<li>RDS for Oracle（推荐）或自建Oracle RAC</li>
+<li>配置主备实例</li>
+</ul>
+</li>
+<li><strong>缓存</strong>: <ul>
+<li>Redis集群（DCS服务）</li>
+</ul>
+</li>
+<li><strong>存储</strong>: <ul>
+<li>云硬盘EVS（SSD）</li>
+<li>对象存储OBS（文件备份）</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-1-2-网络配置"><a href="#3-1-2-网络配置" class="headerlink" title="3.1.2 网络配置"></a>3.1.2 网络配置</h4><ul>
+<li><strong>VPC</strong>: 独立虚拟私有云</li>
+<li><strong>子网</strong>: 业务子网、数据库子网分离</li>
+<li><strong>安全组</strong>: 严格的访问控制策略</li>
+<li><strong>专线&#x2F;VPN</strong>: 与本地环境建立专线连接</li>
+</ul>
+<h3 id="3-2-数据同步方案"><a href="#3-2-数据同步方案" class="headerlink" title="3.2 数据同步方案"></a>3.2 数据同步方案</h3><h4 id="3-2-1-数据库同步"><a href="#3-2-1-数据库同步" class="headerlink" title="3.2.1 数据库同步"></a>3.2.1 数据库同步</h4><p><strong>方案A: Oracle DataGuard（推荐）</strong></p>
+<ul>
+<li>配置Physical Standby Database</li>
+<li>支持同步&#x2F;异步复制</li>
+<li>自动故障转移</li>
+<li>数据零丢失（Maximum Protection模式）</li>
+</ul>
+<p><strong>方案B: Oracle GoldenGate</strong></p>
+<ul>
+<li>实时数据复制</li>
+<li>支持异构环境</li>
+<li>双向同步能力</li>
+<li>更灵活的配置选项</li>
+</ul>
+<p><strong>方案C: 第三方同步工具</strong></p>
+<ul>
+<li>使用阿里云DTS、腾讯云DTS等</li>
+<li>配置简单，成本较低</li>
+<li>适合预算有限的场景</li>
+</ul>
+<h4 id="3-2-2-应用文件同步"><a href="#3-2-2-应用文件同步" class="headerlink" title="3.2.2 应用文件同步"></a>3.2.2 应用文件同步</h4><ul>
+<li><strong>方案</strong>: 使用rsync + inotify实现实时文件同步</li>
+<li><strong>同步内容</strong>: <ul>
+<li>应用程序文件</li>
+<li>配置文件</li>
+<li>日志文件</li>
+<li>上传文件等</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-切换机制设计"><a href="#3-3-切换机制设计" class="headerlink" title="3.3 切换机制设计"></a>3.3 切换机制设计</h3><h4 id="3-3-1-切换策略"><a href="#3-3-1-切换策略" class="headerlink" title="3.3.1 切换策略"></a>3.3.1 切换策略</h4><p><strong>主动切换场景</strong>:</p>
+<ul>
+<li>计划性维护</li>
+<li>本地环境升级</li>
+<li>网络割接等</li>
+</ul>
+<p><strong>被动切换场景</strong>:</p>
+<ul>
+<li>停电故障</li>
+<li>硬件故障</li>
+<li>网络中断</li>
+<li>应用异常</li>
+</ul>
+<h4 id="3-3-2-切换流程"><a href="#3-3-2-切换流程" class="headerlink" title="3.3.2 切换流程"></a>3.3.2 切换流程</h4><ol>
+<li><strong>检测故障</strong>: 监控系统检测到本地ERP不可用</li>
+<li><strong>数据一致性检查</strong>: 确保云端数据与本地数据一致</li>
+<li><strong>切换DNS</strong>: 修改域名解析到云端ERP</li>
+<li><strong>应用启动</strong>: 启动云端ERP服务</li>
+<li><strong>业务验证</strong>: 验证关键业务功能正常</li>
+<li><strong>通知用户</strong>: 通知相关人员切换完成</li>
+</ol>
+<h4 id="3-3-3-切换方式"><a href="#3-3-3-切换方式" class="headerlink" title="3.3.3 切换方式"></a>3.3.3 切换方式</h4><p><strong>自动切换</strong>:</p>
+<ul>
+<li>基于监控告警触发</li>
+<li>预设切换条件和阈值</li>
+<li>适合夜间或非业务高峰期</li>
+</ul>
+<p><strong>手动切换</strong>:</p>
+<ul>
+<li>人工判断和执行</li>
+<li>更安全可控</li>
+<li>适合业务高峰期</li>
+</ul>
+<h3 id="3-4-监控告警体系"><a href="#3-4-监控告警体系" class="headerlink" title="3.4 监控告警体系"></a>3.4 监控告警体系</h3><h4 id="3-4-1-监控指标"><a href="#3-4-1-监控指标" class="headerlink" title="3.4.1 监控指标"></a>3.4.1 监控指标</h4><p><strong>基础设施监控</strong>:</p>
+<ul>
+<li>服务器CPU、内存、磁盘使用率</li>
+<li>网络连通性和带宽</li>
+<li>数据库连接数和响应时间</li>
+</ul>
+<p><strong>应用监控</strong>:</p>
+<ul>
+<li>ERP系统响应时间</li>
+<li>业务交易成功率</li>
+<li>用户登录状态</li>
+<li>关键业务流程监控</li>
+</ul>
+<p><strong>数据同步监控</strong>:</p>
+<ul>
+<li>同步延迟时间</li>
+<li>同步数据量</li>
+<li>同步错误率</li>
+<li>数据一致性检查</li>
+</ul>
+<h4 id="3-4-2-告警机制"><a href="#3-4-2-告警机制" class="headerlink" title="3.4.2 告警机制"></a>3.4.2 告警机制</h4><ul>
+<li><strong>告警级别</strong>: 紧急、重要、一般</li>
+<li><strong>告警方式</strong>: 短信、邮件、企业微信、钉钉</li>
+<li><strong>告警升级</strong>: 分级告警，逐级升级</li>
+<li><strong>告警抑制</strong>: 避免告警风暴</li>
+</ul>
+<h2 id="4-实施步骤"><a href="#4-实施步骤" class="headerlink" title="4. 实施步骤"></a>4. 实施步骤</h2><h3 id="4-1-准备阶段（1-2周）"><a href="#4-1-准备阶段（1-2周）" class="headerlink" title="4.1 准备阶段（1-2周）"></a>4.1 准备阶段（1-2周）</h3><ol>
+<li><p><strong>需求确认</strong></p>
+<ul>
+<li>确定RTO&#x2F;RPO要求</li>
+<li>确定预算和资源</li>
+<li>制定项目计划</li>
+</ul>
+</li>
+<li><p><strong>环境准备</strong></p>
+<ul>
+<li>申请华为云资源</li>
+<li>配置网络连接</li>
+<li>准备测试数据</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-2-搭建阶段（2-3周）"><a href="#4-2-搭建阶段（2-3周）" class="headerlink" title="4.2 搭建阶段（2-3周）"></a>4.2 搭建阶段（2-3周）</h3><ol>
+<li><p><strong>云端环境搭建</strong></p>
+<ul>
+<li>创建ECS实例</li>
+<li>安装操作系统和基础软件</li>
+<li>配置网络和安全策略</li>
+</ul>
+</li>
+<li><p><strong>数据库部署</strong></p>
+<ul>
+<li>部署Oracle数据库</li>
+<li>配置数据库参数</li>
+<li>创建数据库用户和权限</li>
+</ul>
+</li>
+<li><p><strong>应用部署</strong></p>
+<ul>
+<li>部署JDK、Tomcat、Redis</li>
+<li>部署ERP应用程序</li>
+<li>配置应用参数</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-3-同步配置阶段（1-2周）"><a href="#4-3-同步配置阶段（1-2周）" class="headerlink" title="4.3 同步配置阶段（1-2周）"></a>4.3 同步配置阶段（1-2周）</h3><ol>
+<li><p><strong>数据同步配置</strong></p>
+<ul>
+<li>配置Oracle DataGuard&#x2F;GoldenGate</li>
+<li>配置文件同步</li>
+<li>测试同步功能</li>
+</ul>
+</li>
+<li><p><strong>监控部署</strong></p>
+<ul>
+<li>部署监控系统</li>
+<li>配置监控指标</li>
+<li>配置告警规则</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-4-测试阶段（2-3周）"><a href="#4-4-测试阶段（2-3周）" class="headerlink" title="4.4 测试阶段（2-3周）"></a>4.4 测试阶段（2-3周）</h3><ol>
+<li><p><strong>功能测试</strong></p>
+<ul>
+<li>业务功能测试</li>
+<li>数据一致性测试</li>
+<li>性能测试</li>
+</ul>
+</li>
+<li><p><strong>切换测试</strong></p>
+<ul>
+<li>模拟故障切换</li>
+<li>测试切换时间</li>
+<li>验证数据完整性</li>
+</ul>
+</li>
+<li><p><strong>回切测试</strong></p>
+<ul>
+<li>测试从云端切回本地</li>
+<li>验证数据同步</li>
+<li>确保业务连续性</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-5-上线阶段（1周）"><a href="#4-5-上线阶段（1周）" class="headerlink" title="4.5 上线阶段（1周）"></a>4.5 上线阶段（1周）</h3><ol>
+<li><p><strong>生产环境配置</strong></p>
+<ul>
+<li>正式环境数据同步</li>
+<li>监控告警配置</li>
+<li>用户培训</li>
+</ul>
+</li>
+<li><p><strong>试运行</strong></p>
+<ul>
+<li>并行运行一段时间</li>
+<li>监控系统稳定性</li>
+<li>收集用户反馈</li>
+</ul>
+</li>
+</ol>
+<h2 id="5-关键注意事项"><a href="#5-关键注意事项" class="headerlink" title="5. 关键注意事项"></a>5. 关键注意事项</h2><h3 id="5-1-技术注意事项"><a href="#5-1-技术注意事项" class="headerlink" title="5.1 技术注意事项"></a>5.1 技术注意事项</h3><h4 id="5-1-1-数据一致性"><a href="#5-1-1-数据一致性" class="headerlink" title="5.1.1 数据一致性"></a>5.1.1 数据一致性</h4><ul>
+<li><strong>同步延迟控制</strong>: 确保数据同步延迟在可接受范围内</li>
+<li><strong>数据校验</strong>: 定期进行数据一致性校验</li>
+<li><strong>冲突处理</strong>: 制定数据冲突处理策略</li>
+<li><strong>事务完整性</strong>: 确保事务的完整性和一致性</li>
+</ul>
+<h4 id="5-1-2-网络安全"><a href="#5-1-2-网络安全" class="headerlink" title="5.1.2 网络安全"></a>5.1.2 网络安全</h4><ul>
+<li><strong>数据传输加密</strong>: 使用SSL&#x2F;TLS加密数据传输</li>
+<li><strong>访问控制</strong>: 严格的网络访问控制策略</li>
+<li><strong>VPN连接</strong>: 建立安全的VPN连接</li>
+<li><strong>防火墙配置</strong>: 配置合适的防火墙规则</li>
+</ul>
+<h4 id="5-1-3-性能优化"><a href="#5-1-3-性能优化" class="headerlink" title="5.1.3 性能优化"></a>5.1.3 性能优化</h4><ul>
+<li><strong>数据库调优</strong>: 优化数据库参数和索引</li>
+<li><strong>应用调优</strong>: 优化JVM参数和连接池配置</li>
+<li><strong>网络优化</strong>: 优化网络带宽和延迟</li>
+<li><strong>缓存策略</strong>: 合理使用Redis缓存</li>
+</ul>
+<h3 id="5-2-业务注意事项"><a href="#5-2-业务注意事项" class="headerlink" title="5.2 业务注意事项"></a>5.2 业务注意事项</h3><h4 id="5-2-1-合规要求"><a href="#5-2-1-合规要求" class="headerlink" title="5.2.1 合规要求"></a>5.2.1 合规要求</h4><ul>
+<li><strong>医药行业合规</strong>: 符合GSP（药品经营质量管理规范）要求</li>
+<li><strong>数据安全</strong>: 确保患者和药品数据安全</li>
+<li><strong>审计跟踪</strong>: 完整的操作日志和审计轨迹</li>
+<li><strong>数据备份</strong>: 定期备份关键业务数据</li>
+</ul>
+<h4 id="5-2-2-用户培训"><a href="#5-2-2-用户培训" class="headerlink" title="5.2.2 用户培训"></a>5.2.2 用户培训</h4><ul>
+<li><strong>操作培训</strong>: 培训用户云端环境操作</li>
+<li><strong>应急预案</strong>: 制定详细的应急操作手册</li>
+<li><strong>权限管理</strong>: 合理分配用户权限</li>
+<li><strong>变更管理</strong>: 建立变更管理流程</li>
+</ul>
+<h3 id="5-3-运维注意事项"><a href="#5-3-运维注意事项" class="headerlink" title="5.3 运维注意事项"></a>5.3 运维注意事项</h3><h4 id="5-3-1-监控运维"><a href="#5-3-1-监控运维" class="headerlink" title="5.3.1 监控运维"></a>5.3.1 监控运维</h4><ul>
+<li><strong>7×24监控</strong>: 建立全天候监控体系</li>
+<li><strong>定期巡检</strong>: 定期检查系统运行状态</li>
+<li><strong>性能分析</strong>: 定期分析系统性能趋势</li>
+<li><strong>容量规划</strong>: 根据业务增长规划容量</li>
+</ul>
+<h4 id="5-3-2-应急响应"><a href="#5-3-2-应急响应" class="headerlink" title="5.3.2 应急响应"></a>5.3.2 应急响应</h4><ul>
+<li><strong>应急预案</strong>: 制定详细的应急响应预案</li>
+<li><strong>值班制度</strong>: 建立值班和应急响应制度</li>
+<li><strong>联系机制</strong>: 建立快速联系和协调机制</li>
+<li><strong>演练机制</strong>: 定期进行应急演练</li>
+</ul>
+<h2 id="6-成本估算"><a href="#6-成本估算" class="headerlink" title="6. 成本估算"></a>6. 成本估算</h2><h3 id="6-1-一次性成本"><a href="#6-1-一次性成本" class="headerlink" title="6.1 一次性成本"></a>6.1 一次性成本</h3><ul>
+<li><strong>云服务器</strong>: 约2-3万元&#x2F;年</li>
+<li><strong>数据库</strong>: 约1-2万元&#x2F;年</li>
+<li><strong>网络专线</strong>: 约1-2万元&#x2F;年</li>
+<li><strong>实施服务</strong>: 约5-10万元</li>
+<li><strong>总计</strong>: 约10-20万元</li>
+</ul>
+<h3 id="6-2-运维成本"><a href="#6-2-运维成本" class="headerlink" title="6.2 运维成本"></a>6.2 运维成本</h3><ul>
+<li><strong>云服务续费</strong>: 约5-8万元&#x2F;年</li>
+<li><strong>运维人员</strong>: 约10-15万元&#x2F;年</li>
+<li><strong>总计</strong>: 约15-25万元&#x2F;年</li>
+</ul>
+<h2 id="7-风险评估与控制"><a href="#7-风险评估与控制" class="headerlink" title="7. 风险评估与控制"></a>7. 风险评估与控制</h2><h3 id="7-1-技术风险"><a href="#7-1-技术风险" class="headerlink" title="7.1 技术风险"></a>7.1 技术风险</h3><ul>
+<li><strong>数据同步失败</strong>: 建立多重同步机制和监控</li>
+<li><strong>网络中断</strong>: 建立多条网络链路</li>
+<li><strong>性能下降</strong>: 提前进行性能测试和优化</li>
+<li><strong>安全风险</strong>: 加强安全防护措施</li>
+</ul>
+<h3 id="7-2-业务风险"><a href="#7-2-业务风险" class="headerlink" title="7.2 业务风险"></a>7.2 业务风险</h3><ul>
+<li><strong>切换时间过长</strong>: 优化切换流程，减少切换时间</li>
+<li><strong>数据丢失</strong>: 建立完善的备份和恢复机制</li>
+<li><strong>用户接受度</strong>: 加强用户培训和沟通</li>
+<li><strong>合规风险</strong>: 确保方案符合行业规范</li>
+</ul>
+<h3 id="7-3-管理风险"><a href="#7-3-管理风险" class="headerlink" title="7.3 管理风险"></a>7.3 管理风险</h3><ul>
+<li><strong>项目延期</strong>: 制定详细的项目计划和里程碑</li>
+<li><strong>成本超支</strong>: 严格控制项目成本和变更</li>
+<li><strong>人员变动</strong>: 建立知识传承机制</li>
+<li><strong>供应商风险</strong>: 选择可靠的云服务提供商</li>
+</ul>
+<h2 id="8-后续优化建议"><a href="#8-后续优化建议" class="headerlink" title="8. 后续优化建议"></a>8. 后续优化建议</h2><h3 id="8-1-短期优化（3-6个月）"><a href="#8-1-短期优化（3-6个月）" class="headerlink" title="8.1 短期优化（3-6个月）"></a>8.1 短期优化（3-6个月）</h3><ul>
+<li>根据运行情况调优系统参数</li>
+<li>完善监控告警规则</li>
+<li>优化切换流程</li>
+<li>收集用户反馈并改进</li>
+</ul>
+<h3 id="8-2-中期优化（6-12个月）"><a href="#8-2-中期优化（6-12个月）" class="headerlink" title="8.2 中期优化（6-12个月）"></a>8.2 中期优化（6-12个月）</h3><ul>
+<li>考虑实现双活架构</li>
+<li>增加自动化运维能力</li>
+<li>扩展到WMS系统</li>
+<li>建立灾备演练机制</li>
+</ul>
+<h3 id="8-3-长期规划（1-3年）"><a href="#8-3-长期规划（1-3年）" class="headerlink" title="8.3 长期规划（1-3年）"></a>8.3 长期规划（1-3年）</h3><ul>
+<li>构建完整的云原生架构</li>
+<li>实现微服务化改造</li>
+<li>引入DevOps流程</li>
+<li>建设智能运维平台</li>
+</ul>
+<h2 id="9-总结"><a href="#9-总结" class="headerlink" title="9. 总结"></a>9. 总结</h2><p>本方案通过构建本地+云端的高可用ERP架构，可以有效解决海南停电导致的业务中断问题。关键成功因素包括：</p>
+<ol>
+<li><strong>合理的架构设计</strong>: 平衡成本和可用性</li>
+<li><strong>可靠的数据同步</strong>: 确保数据一致性和完整性</li>
+<li><strong>快速的切换机制</strong>: 最小化业务中断时间</li>
+<li><strong>完善的监控体系</strong>: 及时发现和处理问题</li>
+<li><strong>详细的实施计划</strong>: 确保项目顺利交付</li>
+<li><strong>持续的优化改进</strong>: 不断提升系统可靠性</li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://your-domain.com/2025/06/16/%E6%B5%B7%E5%8D%97ERP%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88/" title="医药商业公司ERP高可用架构方案" target="_blank" rel="external">https://your-domain.com/2025/06/16/海南ERP高可用架构方案/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/noodleOnce" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/noodleOnce" target="_blank"><span class="text-dark">汪崇虎</span><small class="ml-1x">Java &amp; 管理</small></a></h3>
+        <div>芝兰生于深林，不以无人而不芳; 君子修道立德，不谓穷困而改节。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2025/06/16/OracleDataGuard%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88/" title="OracleDataGuard数据同步方案"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2025/05/28/%E5%AD%A9%E5%AD%90%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A4%E8%AF%86%E4%B8%96%E7%95%8C%E7%9A%84%EF%BC%9F/" title="孩子是如何认识世界的？"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="beian">
+            <a href="https://beian.miit.gov.cn/" target="_blank">鄂ICP备2025103743号-1</a>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .beian {
+        margin-top: 5px;
+        color: #efefef;
+        font-size: 12px;
+    }
+
+    .beian a {
+        color: #efefef;
+        text-decoration: none;
+    }
+
+    .beian a:hover {
+        color: #efefef;
+    }
+</style>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+
+
+
+
+
+
+</body>
+</html>
